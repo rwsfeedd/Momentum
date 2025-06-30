@@ -36,6 +36,12 @@ public class StartApplication extends Application {
     }
 
     public static void main(String[] args) {
+
+        //run gradle wrapper with 'run --args="args[0] args[1] ..."
+        if(args.length > 1) {
+            System.out.println(args[1]);
+        }
+
         launch();
     }
 }
