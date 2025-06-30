@@ -1,6 +1,10 @@
 plugins {
-    id 'java'
+    id 'java' //implicitly applied by application plugin
+
+    //applied to add support for building CLI application in Java
+    //implicitly applies distribution plugin
     id 'application'
+
     id 'org.javamodularity.moduleplugin' version '1.8.12'
     id 'org.openjfx.javafxplugin' version '0.0.13'
     id 'org.beryx.jlink' version '2.25.0'
@@ -24,9 +28,10 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
+//defines tasks that package and distribute an application
 application {
     mainModule = 'com.javafx.terminmanagement'
-    mainClass = 'com.javafx.terminmanagement.StartApplication'
+    mainClass = 'com.javafx.terminmanagement.StartApplication' //defines main class for the application
 }
 
 javafx {
@@ -35,7 +40,7 @@ javafx {
 }
 
 dependencies {
-
+    //Use JUnit Jupiter for testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
