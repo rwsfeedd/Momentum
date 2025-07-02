@@ -14,6 +14,7 @@ public class StartApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+
         //Ordner für Datenspeicherung erstellen, falls noch nicht vorhanden
         File directory = new File("data");
         if (directory.exists() == false) {

@@ -20,12 +20,13 @@ public class MasterController {
     }
 
     /**
+     * Gibt die einzige Instanz des MasterControllers weiter
      *
      * @return Singleton MasterController
      *
      */
     public static MasterController getInstance() {
-
+        //neue Instanz von MasterController wird erstellt wenn noch keine Instanzen davon exisiteren
         if (instance == null) {
             instance = new MasterController(stage);
         }
