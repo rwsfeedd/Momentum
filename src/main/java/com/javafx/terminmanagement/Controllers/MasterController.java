@@ -1,6 +1,9 @@
 package com.javafx.terminmanagement.Controllers;
 
+import javafx.concurrent.Task;
 import javafx.stage.Stage;
+
+import java.io.File;
 
 /**
  * enthält alle wichtigen Funktionen für die Arbeit mit der Mainstage
@@ -10,6 +13,14 @@ public class MasterController {
     private static Stage stage;
     public MasterController(Stage stage) {
         MasterController.stage = stage;
+    }
+
+    public Task readTask(String name) {
+        //richtiges File öffnen
+        //File einlesen
+            //Informationen in Graph speichern(aufpassen das Graph nicht zu groß wird wegen Speicher)
+
+
     }
 
     /**
