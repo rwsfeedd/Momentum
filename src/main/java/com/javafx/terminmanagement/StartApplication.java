@@ -19,7 +19,7 @@ public class StartApplication extends Application {
         File directory = new File("data");
         if (directory.exists() == false) {
             if (directory.mkdir()) {
-                System.out.println("Data-Verzeichnis konnte erfolgreich erstellt!");
+                System.out.println("Data-Verzeichnis konnte erfolgreich erstellt werden!");
             } else {
                 System.out.println("Data-Verzeichnis konnte nicht erstellt werden!");
             }
