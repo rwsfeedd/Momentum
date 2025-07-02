@@ -19,10 +19,9 @@ public class TaskCreationController {
 
     /**
      * Hauptfenster laden und anzeigen
-     * @throws IOException
      */
     @FXML
-    protected void onCancelButtonClick() throws IOException {
+    protected void onCancelButtonClick(){
 
         //Hauptstage vom Mastercontroller holen
         MasterController controller = MasterController.getInstance();
