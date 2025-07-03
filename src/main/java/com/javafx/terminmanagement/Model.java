@@ -1,5 +1,6 @@
 package com.javafx.terminmanagement;
 
+import javafx.application.Platform;
 import javafx.stage.Stage;
 
 /**
@@ -27,10 +28,17 @@ public class Model {
      *
      */
     public static Model getInstance() {
+        //Fehler wenn keine Hauptstage übergeben wurde
+        if(stage == null) {
+            System.err.println("Model: Bei Applicationsstart wurde keine Stage uebergeben!");
+            Platform.exit();
+        }
+
         //neue Instanz von Model wird erstellt wenn noch keine Instanzen davon exisiteren
         if (instance == null) {
             instance = new Model(stage);
         }
+
         return instance;
     }
 
