@@ -13,4 +13,11 @@ public class Task {
         this.name = name;
         this.active = active;
     }
+
+    public boolean isNull() {
+        if (name.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
 }
