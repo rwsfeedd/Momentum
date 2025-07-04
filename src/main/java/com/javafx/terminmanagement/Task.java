@@ -7,7 +7,7 @@ public class Task {
     /**
      *
      * @param name  Name der Aufgabe
-     * @param active Aktivitaetszustand
+     * @param active Aktivitaets- und Bearbeitungszustand
      */
     public Task(String name, boolean active) {
         this.name = name;
