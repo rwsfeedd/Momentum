@@ -20,4 +20,20 @@ public class Task {
         }
         return false;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean getActive() {
+        return active;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 }
