@@ -33,19 +33,6 @@ public class StartApplication extends Application {
         stage.setScene(scene);
         stage.show();
 
-        //Testing TaskList
-        Task task = new Task("yeye", true);
-        TaskList liste = new TaskList("liste");
-
-        try {
-
-            //System.out.println(liste.getList().getFirst().getName());//Wie werden leere Listen behandelt oder verarbeitet
-            liste.addTask(task);
-            //System.out.println(liste.getList().getFirst().getName());//Aufgabe richtig darstellen durch toString() in Klasse Task
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
     public static void main(String[] args) {
