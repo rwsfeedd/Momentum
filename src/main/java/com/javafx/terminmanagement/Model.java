@@ -30,7 +30,7 @@ public class Model {
     public static Model getInstance() {
         //Fehler wenn keine Hauptstage übergeben wurde
         if(stage == null) {
-            System.err.println("Model: Bei Applicationsstart wurde keine Stage uebergeben!");
+            System.err.println("Model: Bei Programmstart wurde keine Stage uebergeben!");
             Platform.exit();
         }
 
