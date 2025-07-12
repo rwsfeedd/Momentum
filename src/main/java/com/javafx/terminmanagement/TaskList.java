@@ -22,4 +22,9 @@ public class TaskList {
     public Task getTask(int index) {
         return taskList.get(index);
     }
+
+    public int size() {
+        return taskList.size();
+    }
+    //clone() Methode um flache Kopie zurückzugeben statt tiefer Copy
 }
