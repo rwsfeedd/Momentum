@@ -21,6 +21,10 @@ public class Task {
         return false;
     }
 
+    public String toString() {
+        return "Aufgabenname: " + name + ", Aktiv: " + active;
+    }
+
     public String getName() {
         return name;
     }
