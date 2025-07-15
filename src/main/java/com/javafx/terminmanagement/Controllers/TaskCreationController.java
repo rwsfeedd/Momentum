@@ -42,14 +42,7 @@ public class TaskCreationController {
         Task task = new Task(textfieldName.getCharacters().toString(), true);
         model.writeTask(task);
 
-        //Testing
-        TaskList current = model.getCurrentTasks();
-        for (int i = 0; i < current.size(); i++) {
-            System.out.println(current.getTask(i).toString());
-        }
 
-        //Wie werden Sonderzeichen wie ö,ä und ü im Name gespeichert
-        //System.out.println(textfieldName.getCharacters().toString());
     }
 
     /**
