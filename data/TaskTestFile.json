@@ -1,0 +1,14 @@
+{
+  "Haushalt": [
+    {
+      "name": "Aufwaschen",
+      "Prio": "2"
+    },
+    {
+      "name": "Klo putzen",
+      "Prio": "2"
+    }
+  ],
+  "inactiv": [
+  ]
+}
