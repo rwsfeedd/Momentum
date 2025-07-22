@@ -36,6 +36,7 @@ public class Model {
     }
 
     public boolean writeNewTask() {
+        //Unit-Test in dem Task geschrieben wird und danach gelesen wird und die Tasks miteinander verglichen werden
         //Validierung??
         return currentTasks.add(new Task(newTaskNameProp.getValue(), newTaskActiveProp.getValue()));
     }
