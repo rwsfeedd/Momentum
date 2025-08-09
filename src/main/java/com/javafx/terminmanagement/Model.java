@@ -1,6 +1,5 @@
 package com.javafx.terminmanagement;
 
-import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import javafx.application.Platform;
 import javafx.beans.property.*;
@@ -9,7 +8,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.FileReader;
-import java.util.LinkedList;
 
 /**
  * enthält alle wichtigen Funktionen für die Arbeit mit der Mainstage
@@ -24,33 +22,33 @@ public class Model {
     //Property für MainWindowView
     private final SimpleListProperty<Task> currentTasks;
     //Propertys für TaskCreationWindowView
-    private final SimpleStringProperty newTaskNameProp;
-    private final SimpleIntegerProperty newTaskRepeatProp;
-    private final SimpleBooleanProperty newTaskRolloverProp;
-    private final SimpleBooleanProperty newTaskCheckNeedProp;
+    private final SimpleStringProperty newTaskNameProperty;
+    private final SimpleStringProperty newTaskRepeatProperty;
+    private final SimpleBooleanProperty newTaskRolloverProperty;
+    //private final SimpleBooleanProperty newTaskCheckNeedProperty;
 
     public Model(Stage stage) {
         Model.stage = stage;
         //Initialisierung der aktuellen Taskliste
         currentTasks = new SimpleListProperty<Task>(FXCollections.observableArrayList());
 
-        newTaskNameProp = new SimpleStringProperty();
-        newTaskNameProp.set("");
+        newTaskNameProperty = new SimpleStringProperty();
+        newTaskNameProperty.set("");
 
-        newTaskRepeatProp = new SimpleIntegerProperty();
-        newTaskRepeatProp.set(0);
+        newTaskRepeatProperty = new SimpleStringProperty();
+        newTaskRepeatProperty.set("0");
 
-        newTaskRolloverProp = new SimpleBooleanProperty();
-        newTaskRolloverProp.set(false);
+        newTaskRolloverProperty = new SimpleBooleanProperty();
+        newTaskRolloverProperty.set(false);
 
-        newTaskCheckNeedProp = new SimpleBooleanProperty();
-        newTaskCheckNeedProp.set(false);
+        //newTaskCheckNeedProperty = new SimpleBooleanProperty();
+        //newTaskCheckNeedProperty.set(false);
     }
 
     public boolean writeNewTask() {
         //Unit-Test in dem Task geschrieben wird und danach gelesen wird und die Tasks miteinander verglichen werden
         //Validierung??
-        return currentTasks.add(new Task(newTaskNameProp.getValue(), newTaskActiveProp.getValue()));
+        return currentTasks.add(new Task(newTaskNameProperty.getValue(), Integer.parseInt(newTaskRepeatProperty.getValue()), newTaskRolloverProperty.getValue()));
     }
 
     public Task readTask() {
@@ -60,7 +58,8 @@ public class Model {
         File testdat = new File(new File("data"), "SimpleTaskTest.json");
 
         String name = "";
-        boolean active = false;
+        int repeat = 0;
+        boolean rollover = false;
 
         try{
             FileReader reader = new FileReader(testdat);
@@ -71,7 +70,11 @@ public class Model {
                 switch(jread.nextName()){
                     case("name"): name = jread.nextString();
                         break;
-                    case("active"): active = Boolean.valueOf(jread.nextString());
+                    case ("repeat"):
+                        repeat = Integer.parseInt(jread.nextString());
+                        break;
+                    case ("rollover"):
+                        rollover = Boolean.valueOf(jread.nextString());
                         break;
                 }
             }
@@ -80,7 +83,7 @@ public class Model {
             ex.printStackTrace();
         }
 
-        return new Task(name, active);
+        return new Task(name, repeat, rollover);
     }
 
     /**
@@ -112,19 +115,21 @@ public class Model {
         return currentTasks;
     }
 
-    public SimpleStringProperty getNewTaskNameProp() {
-        return newTaskNameProp;
+    public SimpleStringProperty newTaskNameProperty() {
+        return newTaskNameProperty;
     }
 
-    public SimpleIntegerProperty getNewTaskRepeatProp() {
-        return newTaskRepeatProp;
+    public SimpleStringProperty newTaskRepeatProperty() {
+        return newTaskRepeatProperty;
     }
 
-    public SimpleBooleanProperty getNewTaskRolloverProp() {
-        return newTaskRolloverProp;
+    public SimpleBooleanProperty newTaskRolloverProperty() {
+        return newTaskRolloverProperty;
     }
 
-    public SimpleBooleanProperty getNewTaskCheckNeedProp() {
-        return newTaskCheckNeedProp;
+    /*
+    public SimpleBooleanProperty newTaskCheckNeedProperty() {
+        return newTaskCheckNeedProperty;
     }
+    */
 }

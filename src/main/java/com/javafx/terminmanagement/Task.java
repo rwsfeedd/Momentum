@@ -9,7 +9,7 @@ public class Task implements Serializable {
     private int repeat; // 0->keine Wiederholung; 1->jeden Tag; 2->aller 2 Tage
     //private int nRepeat; // 0->keine Wiederholung; 1->1mal Wiederholen; 2->2mal Wiederholen //dayRepeat und nRepeat zusammenarbeit bei Tageswechsel?
     private boolean rollover; // in nächsten Tag tun, wenn nicht gemacht
-    private boolean checkNeed; // Aufgabe täglich anbieten zur Bearbeitung
+    //private boolean checkNeed; // Aufgabe täglich anbieten zur Bearbeitung
     //private Date doneLast; // bei erstem Auftreten Fehler im Zusammenhang mit repeat
     //rollover = true, repeat = 1, -> Aufgaben dürfen nicht mehrmals in einen Tag geschrieben werden?? ->Zähneputzen2xtgl
 
@@ -18,11 +18,11 @@ public class Task implements Serializable {
      * @param name  Name der Aufgabe
      * @param active Aktivitaets- und Bearbeitungszustand
      */
-    public Task(String name, int repeat, boolean rollover, boolean checkNeed) {
+    public Task(String name, int repeat, boolean rollover) {
         this.name = name;
         this.repeat = repeat;
         this.rollover = rollover;
-        this.checkNeed = checkNeed;
+        //this.checkNeed = checkNeed;
     }
 
     public boolean isNull() {
@@ -48,9 +48,11 @@ public class Task implements Serializable {
         return rollover;
     }
 
+    /*
     public boolean getCheckNeed() {
         return checkNeed;
     }
+    */
 
     public void setName(String name) {
         this.name = name;
@@ -64,7 +66,9 @@ public class Task implements Serializable {
         this.rollover = rollover;
     }
 
+    /*
     public void setCheckNeed(boolean checkNeed) {
         this.checkNeed = checkNeed;
     }
+    */
 }

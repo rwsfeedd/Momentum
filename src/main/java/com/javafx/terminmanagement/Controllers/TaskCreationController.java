@@ -2,9 +2,6 @@ package com.javafx.terminmanagement.Controllers;
 
 import com.javafx.terminmanagement.Model;
 import com.javafx.terminmanagement.StartApplication;
-import com.javafx.terminmanagement.Task;
-import com.javafx.terminmanagement.TaskList;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -15,18 +12,18 @@ public class TaskCreationController {
     @FXML
     TextField textfieldName;
     @FXML
-    RadioButton buttonSetActive;
+    TextField textfieldRepeat;
     @FXML
-    RadioButton buttonSetInactive;
-    @FXML
-    ToggleGroup groupButtonsActive;
+    RadioButton buttonSetTrue;
 
     public void initialize() {
         Model model = Model.getInstance();
-        //Binding von Aufgabenstatus
-        model.getNewTaskActiveProp().bindBidirectional(buttonSetActive.selectedProperty());
         //Binding von Aufgabenname
-        model.getNewTaskNameProp().bindBidirectional(textfieldName.textProperty());
+        model.newTaskNameProperty().bindBidirectional(textfieldName.textProperty());
+        //Binding von Aufgabenwiederholung
+        model.newTaskRepeatProperty().bindBidirectional(textfieldRepeat.textProperty());
+        //Binding von Aufgabenrollover
+        model.newTaskRolloverProperty().bindBidirectional(buttonSetTrue.selectedProperty());
     }
 
     @FXML

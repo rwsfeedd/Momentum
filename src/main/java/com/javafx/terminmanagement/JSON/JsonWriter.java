@@ -8,6 +8,8 @@ public class JsonWriter {
         this.file = file;
     }
 
+    //Aufgabenarray schreiben
+    //
 
 
 }

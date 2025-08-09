@@ -17,21 +17,22 @@
             fx:controller="com.javafx.terminmanagement.Controllers.TaskCreationController">
     <center>
         <VBox>
+            <!-- Eingabe Name -->
             <Label text="Name"/>
             <TextField fx:id="textfieldName" promptText="Name der Aufgabe"/>
-            <Label text="Priorität"/>
-            <HBox>
-                <!--4 ToggleButtons für Prioritäten-->
-            </HBox>
-            <Label text="Zeitaufnahme"/>
-            <Label text="Status"/>
+            <!-- Eingabe Wiederholung -->
+            <Label text="Wiederholung aller x Tage, wobei bei 0 keine Wiederholung auftritt"/>
+            <TextField fx:id="textfieldRepeat" promptText="Eingabe von x Tagen"/>
+            <!-- Eingabe Rollover -->
+            <Label text="Rollover"/>
             <HBox>
                 <fx:define>
-                    <ToggleGroup fx:id="groupButtonsActive"/>
+                    <ToggleGroup fx:id="groupButtonsRollover"/>
                 </fx:define>
-                <!--2 ToggleButtons für Status-->
-                <RadioButton fx:id="buttonSetActive" text="Aktiv" selected="true" toggleGroup="$groupButtonsActive"/>
-                <RadioButton fx:id="buttonSetInactive" text="Inaktiv" toggleGroup="$groupButtonsActive"/>
+                <!--2 ToggleButtons für Rollover-->
+                <RadioButton fx:id="buttonSetTrue" text="aktiviert" selected="true"
+                             toggleGroup="$groupButtonsRollover"/>
+                <RadioButton text="deaktiviert" toggleGroup="$groupButtonsRollover"/>
             </HBox>
         </VBox>
 
