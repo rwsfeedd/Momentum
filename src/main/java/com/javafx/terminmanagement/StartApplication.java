@@ -34,7 +34,6 @@ public class StartApplication extends Application {
         stage.setScene(scene);
         stage.show();
 
-        System.out.println(model.readTask().toString());
     }
 
     public static void main(String[] args) {

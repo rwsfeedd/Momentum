@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 
 /**
  * enthält alle wichtigen Funktionen für die Arbeit mit der Mainstage
@@ -20,64 +21,77 @@ public class Model {
     private File dataDir;
 
     //Property für MainWindowView
-    private final SimpleListProperty<Task> currentTasks;
+    private final SimpleListProperty<Task> currentTasks  = new SimpleListProperty<Task>(FXCollections.observableArrayList());
     //Propertys für TaskCreationWindowView
-    private final SimpleStringProperty newTaskNameProperty;
-    private final SimpleStringProperty newTaskRepeatProperty;
-    private final SimpleBooleanProperty newTaskRolloverProperty;
+    private final SimpleStringProperty newTaskNameProperty = new SimpleStringProperty("");
+    private final SimpleStringProperty newTaskRepeatProperty = new SimpleStringProperty("1");
+    private final SimpleBooleanProperty newTaskRolloverProperty  = new SimpleBooleanProperty(false);
     //private final SimpleBooleanProperty newTaskCheckNeedProperty;
 
     public Model(Stage stage) {
         Model.stage = stage;
-        //Initialisierung der aktuellen Taskliste
-        currentTasks = new SimpleListProperty<Task>(FXCollections.observableArrayList());
-
-        newTaskNameProperty = new SimpleStringProperty();
-        newTaskNameProperty.set("");
-
-        newTaskRepeatProperty = new SimpleStringProperty();
-        newTaskRepeatProperty.set("0");
-
-        newTaskRolloverProperty = new SimpleBooleanProperty();
-        newTaskRolloverProperty.set(false);
-
-        //newTaskCheckNeedProperty = new SimpleBooleanProperty();
-        //newTaskCheckNeedProperty.set(false);
     }
 
     public boolean writeNewTask() {
-        //Unit-Test in dem Task geschrieben wird und danach gelesen wird und die Tasks miteinander verglichen werden
         //Validierung??
+        //neue Liste in ListProperty einlesen
+
         return currentTasks.add(new Task(newTaskNameProperty.getValue(), Integer.parseInt(newTaskRepeatProperty.getValue()), newTaskRolloverProperty.getValue()));
     }
 
-    public Task readTask() {
+
+    public ArrayList<Task> readJson() throws Exception{
+        File testdat = new File(new File("data"), "SimpleTaskTest.json");
+        FileReader fileReader = new FileReader(testdat);
+        JsonReader jsonReader = new JsonReader(fileReader);
+
+        //try-finally block damit Ressourcen nach Lesen freigegeben werden
+        try{
+            return readTasksArray(jsonReader);
+        }finally {
+            jsonReader.close();
+            fileReader.close();
+        }
+
+    }
+
+    public ArrayList<Task> readTasksArray(JsonReader reader) throws Exception{
+        //was passiert bei leeren Array?
+        ArrayList<Task> returnArray = new ArrayList<>();
+
+        reader.beginArray();
+        while(reader.hasNext()) {
+           returnArray.add(readTask(reader));
+        }
+        reader.endArray();
+        return returnArray;
+    }
+
+    public Task readTask(JsonReader reader) throws Exception{
         //richtiges File öffnen
         //File einlesen
             //Informationen in Graph speichern(aufpassen das Graph nicht zu groß wird wegen Speicher)
-        File testdat = new File(new File("data"), "SimpleTaskTest.json");
 
         String name = "";
         int repeat = 0;
         boolean rollover = false;
 
         try{
-            FileReader reader = new FileReader(testdat);
-            JsonReader jread = new JsonReader(reader);
-            jread.beginObject();
+            reader.beginObject();
 
-            while(jread.hasNext()) {
-                switch(jread.nextName()){
-                    case("name"): name = jread.nextString();
+            while(reader.hasNext()) {
+                switch(reader.nextName()){
+                    case("name"): name = reader.nextString();
                         break;
                     case ("repeat"):
-                        repeat = Integer.parseInt(jread.nextString());
+                        repeat = Integer.parseInt(reader.nextString());
                         break;
                     case ("rollover"):
-                        rollover = Boolean.valueOf(jread.nextString());
+                        rollover = Boolean.parseBoolean(reader.nextString());
                         break;
                 }
             }
+            reader.endObject();
 
         }catch(Exception ex) {
             ex.printStackTrace();

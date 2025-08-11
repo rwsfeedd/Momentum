@@ -14,6 +14,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class MainWindowController {
@@ -21,11 +22,21 @@ public class MainWindowController {
     private ListView<Task> taskList;
 
     /**
-     * initialisierung der Aufgabenliste
+     * Initialisierung des MainWindowViews, jedes Mal, wenn der MainWindowView geladen wird
      */
     public void initialize() {
         Model model = Model.getInstance();
         taskList.itemsProperty().bind(model.getCurrentTasks());
+
+        ArrayList<Task> liste;
+        try{
+            liste = model.readJson();
+            for(Task task:liste) {
+                System.out.println(task.toString());
+            }
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
