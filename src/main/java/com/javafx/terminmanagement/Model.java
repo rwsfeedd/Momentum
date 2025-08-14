@@ -10,7 +10,9 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * enthält alle wichtigen Funktionen für die Arbeit mit der Mainstage
@@ -19,77 +21,86 @@ public class Model {
     private static Model instance;
     private static Stage stage;//static nötig?
 
-    private File dataDir;
-    private File task
+    private final File dataDir = new File("data");
+    private final File fileTasks = new File(dataDir, "SimpleWriteTest.json");
 
     //Property für MainWindowView
-    private final SimpleListProperty<Task> currentTasks  = new SimpleListProperty<Task>(FXCollections.observableArrayList());
+    private final SimpleListProperty<Task> taskListAllProperty = new SimpleListProperty<Task>(FXCollections.observableArrayList());
     //Propertys für TaskCreationWindowView
     private final SimpleStringProperty newTaskNameProperty = new SimpleStringProperty("");
     private final SimpleStringProperty newTaskRepeatProperty = new SimpleStringProperty("1");
-    private final SimpleBooleanProperty newTaskActiveProperty = new SimpleBooleanProperty(false);
+    private final SimpleBooleanProperty newTaskRolloverProperty = new SimpleBooleanProperty(false);
     //private final SimpleBooleanProperty newTaskCheckNeedProperty;
 
     public Model(Stage stage) {
         Model.stage = stage;
     }
 
-    public void writeJson() {
+    public void writeJson(File fileTasks, List<Task> listTasks) {
         try{
-            File testdat = new File(new File("data"), "SimpleWriteTest.json");
-            //File erstellung bei Endprodukt nicht vergessen
-            testdat.createNewFile();
-            try(FileWriter fileWriter = new FileWriter(testdat);
-                JsonWriter jsonWriter = new JsonWriter(fileWriter)) {
-                jsonWriter.setIndent("    ");
-                writeTaskArray(jsonWriter);
+
+            if (!fileTasks.exists()) {
+                if (!fileTasks.createNewFile()) {
+                    System.out.println("Datenfile konnte nicht erstellt werden!");
+                }
             }
 
-        }catch(Exception e) {
-            e.printStackTrace();
+            try (FileWriter fileWriter = new FileWriter(fileTasks);
+                JsonWriter jsonWriter = new JsonWriter(fileWriter)) {
+                jsonWriter.setIndent("    ");
+                writeTaskArray(jsonWriter, listTasks);
+                jsonWriter.flush();
+            }
+        } catch (IOException ioEx) {
+            ioEx.printStackTrace();
         }
     }
 
-    public void writeTaskArray(JsonWriter jsonWriter) throws Exception{
+    public void writeTaskArray(JsonWriter jsonWriter, List<Task> listTasks) throws IOException {
         jsonWriter.beginArray();
-        writeTask(jsonWriter);
+        for (Task task : listTasks) {
+            writeTask(jsonWriter, task);
+        }
         jsonWriter.endArray();
     }
 
-    public void writeTask(JsonWriter jsonWriter) throws Exception{
-       jsonWriter.beginObject();
-       jsonWriter.name("name").value(newTaskNameProperty.getValue());
-       jsonWriter.name("repeat").value(newTaskRepeatProperty.getValue());
-        jsonWriter.name("rollover").value(newTaskActiveProperty.getValue().toString());
-       jsonWriter.endObject();
+    public void writeTask(JsonWriter jsonWriter, Task task) throws IOException {
+        jsonWriter.beginObject();
+        jsonWriter.name("name").value(task.getName());
+        jsonWriter.name("repeat").value(Integer.toString(task.getRepeat()));
+        jsonWriter.name("rollover").value(Boolean.toString(task.isRollover()));
+        jsonWriter.name("active").value(Boolean.toString(task.isActive()));
+        jsonWriter.endObject();
     }
 
-    public boolean writeNewTask() {
+    public void writeNewTask() {
         //Validierung
             //ist Name nicht leerer String oder null?
             //ist Aufgabenname schon vorhanden?
             //ist Wiederholung eine Zahl?
             //bei Wiederholung Untergrenze=0 und Obergrenze?
-
+        //wenn valide
 
         //neue Liste in ListProperty einlesen
-        writeJson();
-        return currentTasks.add(new Task(newTaskNameProperty.getValue(), Integer.parseInt(newTaskRepeatProperty.getValue()), newTaskActiveProperty.getValue()));
+        List<Task> listNew = new ArrayList<>(taskListAllProperty.getValue());
+
+        Task task = new Task(newTaskNameProperty.getValue(), Integer.parseInt(newTaskRepeatProperty.getValue()), newTaskRolloverProperty.getValue(), true);
+        taskListAllProperty.add(task);
+
+        writeJson(fileTasks, listNew);
+        //die zuletzt hinzugefügte Aufgabe wird irgendwie nie geschrieben
+        //return taskListAllProperty.add(new Task(newTaskNameProperty.getValue(), Integer.parseInt(newTaskRepeatProperty.getValue()), newTaskRolloverProperty.getValue()));
     }
 
 
     public ArrayList<Task> readJson() throws Exception{
         File testdat = new File(new File("data"), "SimpleTaskTest.json");
-        FileReader fileReader = new FileReader(testdat);
-        JsonReader jsonReader = new JsonReader(fileReader);
-
-        //try-finally block damit Ressourcen nach Lesen freigegeben werden
-        try{
+        try (FileReader fileReader = new FileReader(testdat);
+             JsonReader jsonReader = new JsonReader(fileReader)) {
             return readTasksArray(jsonReader);
-        }finally {
-            jsonReader.close();
-            fileReader.close();
         }
+
+        //Leserechte für Datei sicherstellen sonst Fehlermeldung
 
     }
 
@@ -113,6 +124,7 @@ public class Model {
         String name = "";
         int repeat = 0;
         boolean rollover = false;
+        boolean active = false;
 
         try{
             reader.beginObject();
@@ -127,6 +139,9 @@ public class Model {
                     case ("rollover"):
                         rollover = Boolean.parseBoolean(reader.nextString());
                         break;
+                    case ("active"):
+                        active = Boolean.parseBoolean(reader.nextString());
+                        break;
                 }
             }
             reader.endObject();
@@ -135,7 +150,7 @@ public class Model {
             ex.printStackTrace();
         }
 
-        return new Task(name, repeat, rollover);
+        return new Task(name, repeat, rollover, active);
     }
 
     /**
@@ -163,8 +178,8 @@ public class Model {
         return stage;
     }
 
-    public SimpleListProperty<Task> getCurrentTasks() {
-        return currentTasks;
+    public SimpleListProperty<Task> getTaskListAllProperty() {
+        return taskListAllProperty;
     }
 
     public SimpleStringProperty newTaskNameProperty() {
@@ -176,7 +191,7 @@ public class Model {
     }
 
     public SimpleBooleanProperty newTaskActiveProperty() {
-        return newTaskActiveProperty;
+        return newTaskRolloverProperty;
     }
 
     /*

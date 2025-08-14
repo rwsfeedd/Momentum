@@ -1,7 +1,56 @@
 [
     {
-        "name": "vgvaarsg",
-        "repeat": "2",
-        "rollover": "true"
+        "name": "Aufgabe1",
+        "repeat": "1",
+        "rollover": "true",
+        "active": "true"
+    },
+    {
+        "name": "Aufgabe1",
+        "repeat": "1",
+        "rollover": "true",
+        "active": "true"
+    },
+    {
+        "name": "Aufgabe1",
+        "repeat": "1",
+        "rollover": "true",
+        "active": "true"
+    },
+    {
+        "name": "Aufgabe1",
+        "repeat": "1",
+        "rollover": "true",
+        "active": "true"
+    },
+    {
+        "name": "Aufgabe1",
+        "repeat": "1",
+        "rollover": "true",
+        "active": "true"
+    },
+    {
+        "name": "Aufgabe1",
+        "repeat": "1",
+        "rollover": "true",
+        "active": "true"
+    },
+    {
+        "name": "Aufgabe1",
+        "repeat": "1",
+        "rollover": "true",
+        "active": "true"
+    },
+    {
+        "name": "Aufgabe1",
+        "repeat": "1",
+        "rollover": "true",
+        "active": "true"
+    },
+    {
+        "name": "Aufgabe1",
+        "repeat": "1",
+        "rollover": "true",
+        "active": "true"
     }
 ]
