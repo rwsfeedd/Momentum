@@ -3,19 +3,13 @@ package com.javafx.terminmanagement.Controllers;
 import com.javafx.terminmanagement.Model;
 import com.javafx.terminmanagement.StartApplication;
 import com.javafx.terminmanagement.Task;
-import javafx.beans.property.SimpleListProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 public class MainWindowController {
     @FXML
@@ -26,7 +20,7 @@ public class MainWindowController {
      */
     public void initialize() {
         Model model = Model.getInstance();
-        taskList.itemsProperty().bind(model.getCurrentTasks());
+        taskList.itemsProperty().bind(model.getTaskListAllProperty());
 
         ArrayList<Task> liste;
         try{
