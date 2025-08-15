@@ -36,12 +36,19 @@ public class Model {
         Model.stage = stage;
     }
 
-    public void writeJson(File fileTasks, List<Task> listTasks) {
+    /**
+     *
+     * @param fileTasks
+     * @param listTasks
+     * @return Rückgabe von true, wenn alle Aufgaben erfolgreich in die Datei geschrieben wurden
+     */
+    public boolean writeJson(File fileTasks, List<Task> listTasks) {
+        System.err.println("Ein Fehler ist aufgetreten");
         try{
 
             if (!fileTasks.exists()) {
                 if (!fileTasks.createNewFile()) {
-                    System.out.println("Datenfile konnte nicht erstellt werden!");
+                    System.err.println("Datenfile konnte nicht erstellt werden!");
                 }
             }
 
@@ -54,6 +61,7 @@ public class Model {
         } catch (IOException ioEx) {
             ioEx.printStackTrace();
         }
+        return true;
     }
 
     public void writeTaskArray(JsonWriter jsonWriter, List<Task> listTasks) throws IOException {
