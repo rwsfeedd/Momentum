@@ -15,7 +15,7 @@ public class TaskOverviewController {
 
     public void initialize() {
         Model model = Model.getInstance();
-        taskList.itemsProperty().bind(model.getTaskListAllProperty());
+        taskList.itemsProperty().bind(model.taskListAllProperty());
     }
 
     /**
