@@ -35,7 +35,7 @@ public class TaskCreationController {
     @FXML
     protected void onSaveButtonClick() {
         Model model = Model.getInstance();
-        model.writeNewTask();
+        System.out.println("Aufgabe wurde erfolgreich geschrieben: " + model.writeNewTask());
         Stage stage = model.getStage();
         try{
             //Die Objekthierarchie aus dem zugehörigen XML Dokument laden
