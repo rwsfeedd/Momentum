@@ -27,6 +27,7 @@ public class Task implements Serializable {
         this.rollover = rollover;
 
         this.active = active;
+
         //this.checkNeed = checkNeed;
     }
 

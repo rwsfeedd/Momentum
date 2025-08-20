@@ -27,10 +27,11 @@ public class Model {
     private final File fileTasks = new File(dataDir, "SimpleWriteTest.json");
 
     //Property für MainWindowView
+    private final SimpleListProperty<Task> taskListTodayProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final SimpleListProperty<Task> taskListAllProperty = new SimpleListProperty<Task>(FXCollections.observableArrayList());
     //Propertys für TaskCreationWindowView
     private final SimpleStringProperty newTaskNameProperty = new SimpleStringProperty("");
-    private final SimpleStringProperty newTaskRepeatProperty = new SimpleStringProperty("1");
+    private final SimpleStringProperty newTaskRepeatProperty = new SimpleStringProperty("0");
     private final SimpleBooleanProperty newTaskRolloverProperty = new SimpleBooleanProperty(false);
     private final SimpleStringProperty newTaskValidationProperty = new SimpleStringProperty();
     //private final SimpleBooleanProperty newTaskCheckNeedProperty;
@@ -44,14 +45,15 @@ public class Model {
                 System.out.println("Data-Verzeichnis wurde neu erstellt!");
             } else {
                 System.err.println("Data-Verzeichnis konnte nicht erstellt werden!");
-
             }
         }
 
         //Einlesen der Aufgabenliste bei Programmstart
-
+        //TODO: Verhalten bei Fehler verbessern, sodass Nutzer diese sieht ohne Commandline
         try {
-            taskListAllProperty.addAll(readJson(fileTasks));
+            if(!readJsonIntoModel(fileTasks)){
+               System.err.println("Jsondatei konnte nicht eingelesen werden!");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -86,6 +88,7 @@ public class Model {
     }
 
     public void writeTaskArray(JsonWriter jsonWriter, List<Task> listTasks) throws IOException {
+        jsonWriter.name("tasks");
         jsonWriter.beginArray();
         for (Task task : listTasks) {
             writeTask(jsonWriter, task);
@@ -103,14 +106,11 @@ public class Model {
     }
 
     /**
-     * @return Rückgabe von "true" nur wenn Aufgabe erfolgreich geschrieben werden konnte
+     * @return Rückgabe von "true", nur wenn Aufgabe erfolgreich geschrieben werden konnte
      */
     public boolean writeNewTask() {
-        //Validierung
-            //ist Wiederholung eine Zahl?
-            //bei Wiederholung Untergrenze=0 und Obergrenze?
-        //wenn valide
 
+        //Validierung der Eingabeparameter
         boolean isValid = true;
         StringBuilder stringInvalid = new StringBuilder();
         //Validierung des Namens
@@ -128,16 +128,27 @@ public class Model {
                 }
             }
         }
-
         //Validierung Aufgabenwiederholung
-        if (newTaskRepeatProperty().getValue().isEmpty()) {
-            stringInvalid.append("Aufgabenwiederholung ist leer! \n");
+        int repeat = -1;
+        if (newTaskRepeatProperty().getValue().isEmpty()) {//Test ob in Wiederholung etwas geschrieben wurde
+            stringInvalid.append("Wiederholung ist leer! \n");
             isValid = false;
         } else {
             //Test, ob Aufgabenwiederholung einem Integer entspricht
+            try{
+                repeat = Integer.parseInt(newTaskRepeatProperty().getValue());
+                //Test, ob Wiederholung in akzeptablen Bereich ist
+                if(repeat < 0 | repeat > 100) {
+                    stringInvalid.append("Wiederholung außerhalb des Bereichs 0 - 99 \n");
+                    isValid = false;
+                }
+            }catch(NumberFormatException numEx) {
+                stringInvalid.append("Wiederholung ist keine Nummer! \n");
+                isValid = false;
+            }
         }
 
-
+        //Rückgabe von "false", wenn Aufgabenparameter nicht valide sind
         if (isValid == false) {
             this.setNewTaskValidationProperty(stringInvalid.toString());
             return false;
@@ -146,7 +157,7 @@ public class Model {
         //neue Liste in ListProperty einlesen
         List<Task> listNew = new ArrayList<>(taskListAllProperty.getValue());
 
-        Task task = new Task(newTaskNameProperty.getValue(), Integer.parseInt(newTaskRepeatProperty.getValue()), newTaskRolloverProperty.getValue(), true);
+        Task task = new Task(name, repeat, newTaskRolloverProperty.getValue(), true);
 
         listNew.add(task);
 
@@ -155,11 +166,24 @@ public class Model {
         return true;
     }
 
-
-    public ArrayList<Task> readJson(File fileTasks) throws Exception {
+    /**
+     *
+     * @param fileTasks
+     * @return
+     * @throws Exception
+     */
+    public boolean readJsonIntoModel(File fileTasks) throws Exception {
         try (FileReader fileReader = new FileReader(fileTasks);
              JsonReader jsonReader = new JsonReader(fileReader)) {
-            return readTasksArray(jsonReader);
+            jsonReader.beginObject();
+            switch(jsonReader.nextName()) {
+                case "tasks":
+                    taskListAllProperty().addAll(readTasksArray(jsonReader));
+                    break;
+                case "today":
+                    taskListDailyProperty().
+            }
+            jsonReader.nextName();
         }
 
         //Leserechte für Datei sicherstellen sonst Fehlermeldung
@@ -211,7 +235,6 @@ public class Model {
         }catch(Exception ex) {
             ex.printStackTrace();
         }
-
         return new Task(name, repeat, rollover, active);
     }
 
