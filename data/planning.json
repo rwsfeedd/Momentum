@@ -1,14 +1,10 @@
 {
-    "date": "",
-    "today": [
-        "Aufgabe1",
-        "Aufgabe2",
-        "Aufgabe3",
-        "fgagaegearg"
+    "plan": [
+        "Test",
+        "Test2"
     ],
     "todo": [
-        "Aufgabe1",
-        "Aufgabe2",
-        "Aufgabe3"
+        "Test",
+        "Test2"
     ]
 }

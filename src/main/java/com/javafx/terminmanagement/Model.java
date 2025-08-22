@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -64,9 +65,13 @@ public class Model {
             taskListAllProperty().addAll(readTasksJson(fileTasks));
 
             //Stringliste für Tagesplan und noch zu machende Aufgaben mit Werten füllen
-            readPlanningJson(filePlanning);
+            //aber nur wenn die Datei nicht leer ist
+            if (filePlanning.length() != 0) {
+                readPlanningJson(filePlanning);
+            }
             //noch zu machende Aufgaben mit vollständiger Taskliste abgleichen
             //TODO: mit sortierter Liste könnte eine sehr viel elegantere Lösung gefunden werden
+            //TODO: String löschen, wenn keine dazupassende Aufgabe gefunden wird
             boolean exists;
             for (String stringTodo : stringListTodoProperty) {
                 exists = false;
@@ -93,10 +98,31 @@ public class Model {
                     System.out.println("Aufgabe " + stringPlan + " in Aufgabenplan exisitiert nicht!");
                 }
             }
+
         } catch (IOException iOEx) {
             iOEx.printStackTrace();
         }
 
+    }
+
+    /**
+     * Gibt die einzige Instanz des Modells weiter
+     *
+     * @return Singleton Model
+     */
+    public static Model getInstance() {
+        //Fehler wenn keine Hauptstage übergeben wurde
+        if (stage == null) {
+            System.err.println("Model: Bei Programmstart wurde keine Stage uebergeben!");
+            Platform.exit();
+        }
+
+        //neue Instanz von Model wird erstellt wenn noch keine Instanzen davon exisiteren
+        if (instance == null) {
+            instance = new Model(stage);
+        }
+
+        return instance;
     }
 
     /**
@@ -161,13 +187,59 @@ public class Model {
     }
 
     /*
-    public boolean writeNewTodos()
-    public boolean writePlanningJson()
+    public boolean writeNewTodoString()
+    public boolean writeDeleteTodoString()
+    writeNewPlanString()
+    writeDeletePlanString()
      */
 
+    public boolean writePlanningJson(File filePlanning, List<String> listPlan, List<String> listTodo) throws IOException {
+        try (FileWriter fileWriter = new FileWriter(filePlanning);
+             JsonWriter jsonWriter = new JsonWriter(fileWriter)) {
+            jsonWriter.setIndent("    ");
+            jsonWriter.beginObject();
+
+            //writeDate()
+            writePlanArray(jsonWriter, listPlan);
+            writeTodoArray(jsonWriter, listTodo);
+
+            jsonWriter.endObject();
+        }
+
+
+        return true;
+    }
+
+    public void writeTodoArray(JsonWriter jsonWriter, List<String> listTodo) throws IOException {
+        jsonWriter.name("todo");
+        jsonWriter.beginArray();
+
+        for (String stringTodo : listTodo) {
+            jsonWriter.value(stringTodo);
+        }
+
+        jsonWriter.endArray();
+    }
+
+    public void writePlanArray(JsonWriter jsonWriter, List<String> listPlan) throws IOException {
+        jsonWriter.name("plan");
+        jsonWriter.beginArray();
+
+        for (String stringPlan : listPlan) {
+            jsonWriter.value(stringPlan);
+        }
+
+        jsonWriter.endArray();
+    }
+
+    public void writeDate(JsonWriter jsonWriter, Date date) {
+
+    }
+
+
     //alle Listen und Datum einlesen
-    public boolean readPlanningJson(File planningFile) throws IOException {
-        try (FileReader fileReader = new FileReader(planningFile);
+    public boolean readPlanningJson(File filePlanning) throws IOException {
+        try (FileReader fileReader = new FileReader(filePlanning);
              JsonReader jsonReader = new JsonReader(fileReader)) {
             jsonReader.beginObject();
             while (jsonReader.hasNext()) {
@@ -175,20 +247,20 @@ public class Model {
                     case "date":
                         jsonReader.nextString();
                         break;
-                    case "today":
+                    case "plan":
                         stringListPlanProperty.addAll(readPlanArray(jsonReader));
                         break;
                     case "todo":
                         stringListTodoProperty.addAll(readTodoArray(jsonReader));
                         break;
                     default:
-                        System.err.println("Unbekannter Name in Datei: " + planningFile);
+                        System.err.println("Unbekannter Name in Datei: " + filePlanning);
                         break;
                 }
             }
             jsonReader.endObject();
         }
-
+        //TODO: Rückgabewert überdenken, da bie Fehlerfall Exception gethrowed wird
         return true;
     }
 
@@ -323,26 +395,7 @@ public class Model {
         return new Task(name, repeat, rollover);
     }
 
-    /**
-     * Gibt die einzige Instanz des Modells weiter
-     *
-     * @return Singleton Model
-     *
-     */
-    public static Model getInstance() {
-        //Fehler wenn keine Hauptstage übergeben wurde
-        if(stage == null) {
-            System.err.println("Model: Bei Programmstart wurde keine Stage uebergeben!");
-            Platform.exit();
-        }
 
-        //neue Instanz von Model wird erstellt wenn noch keine Instanzen davon exisiteren
-        if (instance == null) {
-            instance = new Model(stage);
-        }
-
-        return instance;
-    }
 
     public Stage getStage() {
         return stage;
