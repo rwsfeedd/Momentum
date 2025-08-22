@@ -12,6 +12,8 @@ public class Task implements Serializable {
     //private boolean checkNeed; // Aufgabe täglich anbieten zur Bearbeitung
     //private Date doneLast; // bei erstem Auftreten Fehler im Zusammenhang mit repeat
     //rollover = true, repeat = 1, -> Aufgaben dürfen nicht mehrmals in einen Tag geschrieben werden?? ->Zähneputzen2xtgl
+    private boolean planned;
+    private boolean todo;
 
     //Attribute, die bei Erstellung nicht von Nutzer gemacht werden
 
@@ -24,7 +26,8 @@ public class Task implements Serializable {
         this.repeat = repeat;
         this.rollover = rollover;
 
-
+        this.todo = false;
+        this.planned = false;
         //this.checkNeed = checkNeed;
     }
 

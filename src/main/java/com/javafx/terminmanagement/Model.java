@@ -160,6 +160,11 @@ public class Model {
         return true;
     }
 
+    /*
+    public boolean writeNewTodos()
+    public boolean writePlanningJson()
+     */
+
     //alle Listen und Datum einlesen
     public boolean readPlanningJson(File planningFile) throws IOException {
         try (FileReader fileReader = new FileReader(planningFile);
