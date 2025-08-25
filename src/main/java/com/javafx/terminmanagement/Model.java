@@ -29,7 +29,9 @@ public class Model {
     private final File fileTasks = new File(dataDir, "SimpleWriteTest.json");
     private final File filePlanning = new File(dataDir, "planning.json");
 
-    //Propertys für die Auswahl von einem Element aus einem ListView
+    //Property für die Auswahl von einem Element aus ListView von mainWindow
+    private final SimpleObjectProperty<String> selectedStringProperty = new SimpleObjectProperty<>();
+    //Property für die Auswahl von einem Element aus ListView von taskOverview
     private final SimpleObjectProperty<Task> selectedTaskProperty = new SimpleObjectProperty<>();
 
     private final SimpleListProperty<String> stringListPlanProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -111,7 +113,7 @@ public class Model {
             //Stringliste für Tagesplan und noch zu machende Aufgaben mit Werten füllen
             readPlanningJson(filePlanning);
 
-            //noch zu machende Aufgaben mit vollständiger Taskliste abgleichen
+            //Aufgaben aus Taskliste mit Informationen aus planning.json anreichern
             //TODO: mit sortierter Liste könnte eine sehr viel elegantere Lösung gefunden werden
             //TODO: String löschen, wenn keine dazupassende Aufgabe gefunden wird
             boolean exists;
@@ -119,25 +121,33 @@ public class Model {
                 exists = false;
                 for (int i = 0; i < taskListAllProperty().getValue().size(); i++) {
                     if (stringTodo.equals(taskListAllProperty().getValue().get(i).getName())) {
+                        taskListAllProperty().getValue().get(i).setTodo(true);
                         exists = true;
                         break;
                     }
                 }
                 if (exists == false) {
+
+                    //TODO: remove Todo
+
                     System.err.println("Aufgabe " + stringTodo + " in Todo exisitiert nicht!");
                 }
             }
             //Tagesplan Namen mit noch zu machenden Aufgaben abgleichen
             for (String stringPlan : stringListPlanProperty) {
                 exists = false;
-                for (String stringTask : stringListTodoProperty) {
-                    if (stringPlan.equals(stringTask)) {
+                for (int i = 0; i < taskListAllProperty().getValue().size(); i++) {
+                    if (stringPlan.equals(taskListAllProperty().getValue().get(i).getName())) {
+                        taskListAllProperty().getValue().get(i).setPlanned(true);
                         exists = true;
                         break;
                     }
                 }
                 if (exists == false) {
-                    System.out.println("Aufgabe " + stringPlan + " in Aufgabenplan exisitiert nicht!");
+
+                    //TODO: remove Planned
+
+                    System.err.println("Aufgabe " + stringPlan + " in Aufgabenplan exisitiert nicht!");
                 }
             }
 
@@ -224,6 +234,7 @@ public class Model {
         } catch (IOException ex) {
             System.out.println("In der writeNewTask-Methode vom Model konnte die Aufgabenliste nicht eingelesen werden!");
             ex.printStackTrace();
+            return false;
         }
         //neue Aufgabe in neue Liste schreiben
         listNew.add(new Task(name, repeat, newTaskRolloverProperty.getValue()));
@@ -251,13 +262,18 @@ public class Model {
         taskListAllProperty().setAll(listNew);
 
         //Aufgabe aus TodoListe und planListe löschen und in Datei schreiben, bei vorhandensein
+        ArrayList<String> todoListNew = new ArrayList<>(stringListTodoProperty());
+        ArrayList<String> planListNew = new ArrayList<>(stringListPlanProperty());
+        boolean stringListChanged = false;
         if (stringListTodoProperty().contains(deletedTask.getName())) {
-            ArrayList<String> todoListNew = new ArrayList<>(stringListTodoProperty());
-            ArrayList<String> planListNew = new ArrayList<>(stringListPlanProperty());
             todoListNew.remove(deletedTask.getName());
-            if (stringListPlanProperty().contains(deletedTask.getName())) {
-                planListNew.remove(deletedTask.getName());
-            }
+            stringListChanged = true;
+        }
+        if (stringListPlanProperty().contains(deletedTask.getName())) {
+            planListNew.remove(deletedTask.getName());
+            stringListChanged = true;
+        }
+        if (stringListChanged = true) {
             if (!writePlanningJson(filePlanning, todoListNew, planListNew)) {
                 return false;
             }
@@ -268,7 +284,7 @@ public class Model {
         return true;
     }
 
-    public boolean writeSignInPlan() {
+    public boolean writeSignInTask() {
         //Test, ob eine Aufgabe ausgewählt wurde
         if (selectedTaskProperty().getValue() == null) {
             return false;
@@ -281,6 +297,9 @@ public class Model {
         if (newList.contains(taskToSignIn.getName())) {
             return true;
         } else {
+            //in Aufgabenliste schreiben, dass Aufgabe in Aufgabenplan ist
+            taskListAllProperty().getValue().get(taskListAllProperty().getValue().indexOf(taskToSignIn)).setPlanned(true);
+
             newList.add(taskToSignIn.getName());
         }
         //Aufgabe in filePlan schreiben und bei Erfolg in Plannungsliste eintragen
@@ -292,6 +311,76 @@ public class Model {
 
         return true;
     }
+
+    public boolean writeSignOutTask() {
+        //Test, ob eine Aufgabe ausgewählt wurde
+        if (selectedStringProperty().getValue() == null) {
+            return false;
+        }
+
+        //temporäre Variablen erstellen und mit Werten füllen
+        String taskToSignOut = selectedStringProperty().getValue();
+        ArrayList<String> newList = new ArrayList<>(stringListPlanProperty());
+        //ausgewählte Aufgabe aus temporärer Liste entfernen
+        newList.remove(taskToSignOut);
+
+        //temporäre Liste in filePlanning schreiben und Propertys updaten
+        if (writePlanningJson(filePlanning, newList, stringListTodoProperty)) {
+            //stringListProperty für mainWindow updaten
+            stringListPlanProperty().getValue().setAll(newList);
+            //taskListProperty für taskOverview updaten
+            int indexTaskToSignOut = findIndexOfTaskByName(taskToSignOut, taskListAllProperty());
+            if (indexTaskToSignOut != -1) {
+                taskListAllProperty().getValue().get(indexTaskToSignOut).setPlanned(false);
+            } else {
+                System.out.println("Aufgabe aus Aufgabenplan gelöscht, die nicht in Aufgabenliste exisitiert!");
+            }
+
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean writeDoneTask() {
+        //Test, ob eine Aufgabe ausgewählt wurde
+        if (selectedStringProperty().getValue() == null) {
+            return false;
+        }
+
+        //temporäre Variablen erstellen und mit Werten füllen
+        String taskDone = selectedStringProperty().getValue();
+        ArrayList<String> newTodoList = new ArrayList<>(stringListTodoProperty());
+        ArrayList<String> newPlanList = new ArrayList<>(stringListPlanProperty());
+
+        //ausgewählte Aufgabe aus temporären Listen entfernen
+        newTodoList.remove(taskDone);
+        newPlanList.remove(taskDone);
+
+        //temporäre Liste in filePlanning schreiben und Propertys updaten
+        if (writePlanningJson(filePlanning, newPlanList, newTodoList)) {
+            //stringListProperty für mainWindow updaten
+            stringListPlanProperty().getValue().setAll(newPlanList);
+            //stringListTodoProperty updaten
+            stringListTodoProperty().getValue().setAll(newTodoList);
+            //taskListProperty für taskOverview updaten
+            int indexTaskDone = findIndexOfTaskByName(taskDone, taskListAllProperty());
+            if (indexTaskDone != -1) {
+                taskListAllProperty().getValue().get(indexTaskDone).setTodo(false);
+                taskListAllProperty().getValue().get(indexTaskDone).setPlanned(false);
+            } else {
+                System.out.println("Aufgabe aus Aufgabenplan gelöscht, die nicht in Aufgabenliste exisitiert!");
+            }
+
+        } else {
+            return false;
+        }
+
+
+        return true;
+    }
+
     /*
     public boolean writeNewTodoString()
     public boolean writeDeleteTodoString()
@@ -515,10 +604,22 @@ public class Model {
         return new Task(name, repeat, rollover);
     }
 
+    public int findIndexOfTaskByName(String name, List<Task> taskList) {
+        for (int i = 0; i < taskList.size(); i++) {
+            if (taskList.get(i).getName().equals(name)) {
+                return i;
+            }
+        }
 
+        return -1;
+    }
 
     public Stage getStage() {
         return stage;
+    }
+
+    public SimpleObjectProperty<String> selectedStringProperty() {
+        return selectedStringProperty;
     }
 
     public SimpleObjectProperty<Task> selectedTaskProperty() {

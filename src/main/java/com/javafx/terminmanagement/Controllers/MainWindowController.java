@@ -18,6 +18,7 @@ public class MainWindowController {
     public void initialize() {
         Model model = Model.getInstance();
         taskList.itemsProperty().bind(model.stringListPlanProperty());
+        model.selectedStringProperty().bind(taskList.selectionModelProperty().getValue().selectedItemProperty());
     }
 
     /**
@@ -49,6 +50,11 @@ public class MainWindowController {
      */
     @FXML
     protected void onTaskSignOutButtonClick() {
+        Model model = Model.getInstance();
+        //System.out.println(model.selectedStringProperty().getValue());
+        if (!model.writeSignOutTask()) {
+            System.err.println("Aufgabe konnte nicht ausgetragen werden!");
+        }
 
     }
 
@@ -57,6 +63,9 @@ public class MainWindowController {
      */
     @FXML
     protected void onTaskDoneButtonClick() {
-
+        Model model = Model.getInstance();
+        if (!model.writeDoneTask()) {
+            System.err.println("Aufgabe konnte nicht fertiggestellt werden!");
+        }
     }
 }

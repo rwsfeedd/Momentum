@@ -5,16 +5,6 @@
         "rollover": "true"
     },
     {
-        "name": "Aufgabe4",
-        "repeat": "1",
-        "rollover": "true"
-    },
-    {
-        "name": "Aufgabe8",
-        "repeat": "1",
-        "rollover": "true"
-    },
-    {
         "name": "Aufgabe9",
         "repeat": "1",
         "rollover": "true"
@@ -35,17 +25,7 @@
         "rollover": "true"
     },
     {
-        "name": "Aufgabe14",
-        "repeat": "1",
-        "rollover": "true"
-    },
-    {
         "name": "Aufgabe15",
-        "repeat": "1",
-        "rollover": "true"
-    },
-    {
-        "name": "abbrecheraufgabe",
         "repeat": "1",
         "rollover": "true"
     },
@@ -57,11 +37,6 @@
     {
         "name": "neueAufgabe",
         "repeat": "2",
-        "rollover": "true"
-    },
-    {
-        "name": "NeueAufgabehier",
-        "repeat": "1",
         "rollover": "true"
     },
     {
@@ -82,6 +57,11 @@
     {
         "name": "grehsafadsga",
         "repeat": "2",
+        "rollover": "true"
+    },
+    {
+        "name": "Toilette reinigen",
+        "repeat": "12",
         "rollover": "true"
     }
 ]

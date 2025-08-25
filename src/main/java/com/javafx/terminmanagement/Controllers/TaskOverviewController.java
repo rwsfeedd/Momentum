@@ -3,13 +3,10 @@ package com.javafx.terminmanagement.Controllers;
 import com.javafx.terminmanagement.Model;
 import com.javafx.terminmanagement.StartApplication;
 import com.javafx.terminmanagement.Task;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
-import javafx.scene.control.MultipleSelectionModel;
 import javafx.stage.Stage;
 
 public class TaskOverviewController {
@@ -18,7 +15,7 @@ public class TaskOverviewController {
 
     public void initialize() {
         Model model = Model.getInstance();
-        taskList.itemsProperty().bind(model.taskListAllProperty());
+        taskList.itemsProperty().bindBidirectional(model.taskListAllProperty());
         model.selectedTaskProperty().bind(taskList.selectionModelProperty().get().selectedItemProperty());
     }
 
@@ -49,11 +46,10 @@ public class TaskOverviewController {
     @FXML
     protected void onTaskDeleteButtonClick() {
         Model model = Model.getInstance();
-        if (model.selectedTaskProperty().get() == null) {
-            //TODO Nutzer Fehler anzeigen mit Label
-            System.out.println("keine Aufgabe ausgewählt!");
+        if (!model.writeDeletedTask()) {
+            System.out.println("Fehler beim Löschen der Aufgabe!");
         } else {
-            model.writeDeletedTask();
+
             //System.out.println(model.selectedTaskProperty().getValue().toString());
         }
 
@@ -65,8 +61,8 @@ public class TaskOverviewController {
     @FXML
     protected void onTaskSignInButtonClick() {
         Model model = Model.getInstance();
-        if (!model.writeSignInPlan()) {
-            System.out.println("Fehler bei Eintragen der Aufgabe in den Aufgabenplan");
+        if (!model.writeSignInTask()) {
+            System.out.println("Fehler beim Eintragen der Aufgabe in den Aufgabenplan");
         }
     }
 

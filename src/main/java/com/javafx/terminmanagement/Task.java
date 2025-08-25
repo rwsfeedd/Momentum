@@ -39,7 +39,7 @@ public class Task implements Serializable {
     }
 
     public String toString() {
-        return "Aufgabenname: " + name + ", Wiederholung: " + repeat + ", Uebertragen: " + rollover;
+        return name + ": Wiederholung: " + repeat + ", Uebertragen: " + rollover + ", todo: " + todo + ", geplant: " + planned;
     }
 
     public String getName() {
@@ -48,6 +48,14 @@ public class Task implements Serializable {
 
     public int getRepeat() {
         return repeat;
+    }
+
+    public boolean isTodo() {
+        return todo;
+    }
+
+    public boolean isPlanned() {
+        return planned;
     }
 
     public boolean isRollover() {
@@ -71,6 +79,14 @@ public class Task implements Serializable {
 
     public void setRollover(boolean rollover) {
         this.rollover = rollover;
+    }
+
+    public void setTodo(boolean todo) {
+        this.todo = todo;
+    }
+
+    public void setPlanned(boolean planned) {
+        this.planned = planned;
     }
 
 
