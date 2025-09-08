@@ -1,6 +1,7 @@
 package com.javafx.terminmanagement;
 
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import javafx.application.Platform;
 import javafx.beans.property.*;
@@ -11,8 +12,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -20,13 +26,18 @@ import java.util.List;
  */
 public class Model {
     private static Model instance;
-    private static Stage stage;//static nötig?
+    private static Stage stage;
+
+    //internationales Datumsformat nach ISO 8601, mit dem alle lese- und schreibvorgänge von Datumsangaben getätigt werden
+    public final DateTimeFormatter dateFormat = DateTimeFormatter.ISO_LOCAL_DATE;
+    //Datum, für das der Aufgabenplan gemacht wurde. wird bei Programmstart aktualisiert
+    private LocalDate planDate;
 
     //Ordner für Datenarbeit
     private final File dataDir = new File("data");
 
     //Dateien für Datenarbeit
-    private final File fileTasks = new File(dataDir, "SimpleWriteTest.json");
+    private final File fileTasks = new File(dataDir, "tasks.json");
     private final File filePlanning = new File(dataDir, "planning.json");
 
     //Property für die Auswahl von einem Element aus ListView von mainWindow
@@ -104,20 +115,21 @@ public class Model {
             Platform.exit();
         }
 
-        //Einlesen der Aufgabenliste bei Programmstart
-        //TODO: Verhalten bei Fehler verbessern, sodass Nutzer diese sieht ohne Commandline
+        //Einlesen der Aufgabenliste und der Stringlisten bei Programmstart
         try {
             //vollständige Taskliste mit Werten füllen
             taskListAllProperty().addAll(readTasksJson(fileTasks));
 
-            //Stringliste für Tagesplan und noch zu machende Aufgaben mit Werten füllen
+            //Stringliste für Tagesplan, noch zu machende Aufgaben und Datum mit Werten füllen
             readPlanningJson(filePlanning);
 
+            //planDate mit aktuellem Datum initialisieren, falls dieses nicht in dem planningFile eingelesen wurde
+            if (planDate == null) planDate = LocalDate.now();
+
             //Aufgaben aus Taskliste mit Informationen aus planning.json anreichern
-            //TODO: mit sortierter Liste könnte eine sehr viel elegantere Lösung gefunden werden
-            //TODO: String löschen, wenn keine dazupassende Aufgabe gefunden wird
             boolean exists;
-            for (String stringTodo : stringListTodoProperty) {
+            HashSet<String> stringRemove = new HashSet<>();
+            for (String stringTodo : stringListTodoProperty().getValue()) {
                 exists = false;
                 for (int i = 0; i < taskListAllProperty().getValue().size(); i++) {
                     if (stringTodo.equals(taskListAllProperty().getValue().get(i).getName())) {
@@ -127,14 +139,12 @@ public class Model {
                     }
                 }
                 if (exists == false) {
-
-                    //TODO: remove Todo
-
-                    System.err.println("Aufgabe " + stringTodo + " in Todo exisitiert nicht!");
+                    //Aufgabe ist nicht in taskList aber in todoarray in planning.json
+                    stringRemove.add(stringTodo);
+                    System.err.println("Aufgabe " + stringTodo + " aus Todo existiert nicht!");
                 }
             }
-            //Tagesplan Namen mit noch zu machenden Aufgaben abgleichen
-            for (String stringPlan : stringListPlanProperty) {
+            for (String stringPlan : stringListPlanProperty().getValue()) {
                 exists = false;
                 for (int i = 0; i < taskListAllProperty().getValue().size(); i++) {
                     if (stringPlan.equals(taskListAllProperty().getValue().get(i).getName())) {
@@ -144,12 +154,74 @@ public class Model {
                     }
                 }
                 if (exists == false) {
-
-                    //TODO: remove Planned
-
-                    System.err.println("Aufgabe " + stringPlan + " in Aufgabenplan exisitiert nicht!");
+                    //Aufgabe ist nicht in taskList aber in planarray in planning.json
+                    stringRemove.add(stringPlan);
+                    System.err.println("Aufgabe " + stringPlan + " aus Aufgabenplan existiert nicht!");
                 }
             }
+            //Aufgaben die in planning.json existieren, aber keine dahinterliegende Aufgabe besitzen, löschen
+            if (!stringRemove.isEmpty()) {
+                ArrayList<String> planListNew = new ArrayList<>(stringListPlanProperty().getValue());
+                ArrayList<String> todoListNew = new ArrayList<>(stringListPlanProperty().getValue());
+                planListNew.removeAll(stringRemove);
+                todoListNew.removeAll(stringRemove);
+                if (writePlanningJson(filePlanning, planDate, planListNew, todoListNew)) {
+                    stringListPlanProperty().setAll(planListNew);
+                    stringListTodoProperty().setAll(todoListNew);
+                } else {
+                    System.out.println("Aufgaben aus dem Aufgabenplan, die nicht in der Aufgabenliste existieren, konnten nicht aus dem Planfile gelöscht werden!");
+                }
+            }
+
+            //Testen, ob der Tag des Aufgabenplans noch aktuell ist und wenn nicht Aufgabenliste updaten
+            LocalDate currentDate = LocalDate.now();
+            if (planDate.until(currentDate, ChronoUnit.DAYS) > 0) {
+                ArrayList<Task> taskListNew = new ArrayList<>(taskListAllProperty());
+
+                //temporäre Aufgabenliste aktualisieren
+                Task currentTask; //temporäre Variable um Zugriffe auf taskListNew zu verringern
+                for (int i = 0; i < taskListNew.size(); i++) {
+                    //aktueller Aufgabe in temporäre Variable lesen
+                    currentTask = taskListNew.get(i);
+
+                    //geplante Aufgaben in temporärer Aufgabenliste updaten
+                    if (currentTask.isPlanned() && !currentTask.isRollover()) {
+                        taskListNew.get(i).setPlanned(false);
+                    }
+
+                    //check, ob Aufgabe eine fällige Wiederholungsaufgabe ist und wenn ja, in temporärem Aufgabenplan updaten
+                    if (currentTask.getRepeat() < 1) continue;
+                    if (currentTask.isTodo()) continue;
+                    if (currentTask.getDateLastDone() != null) {
+                        if (currentTask.getDateLastDone().until(currentDate, ChronoUnit.DAYS) < currentTask.getRepeat())
+                            continue;
+                    }
+                    taskListNew.get(i).setTodo(true);
+                    taskListNew.get(i).setPlanned(true);
+                }
+
+                //temporären Aufgabenplan und Todoliste initialisieren
+                ArrayList<String> todoListNew = new ArrayList<>();
+                ArrayList<String> planListNew = new ArrayList<>();
+                //temporären Aufgabenplan und Todoliste mit Werten füllen
+                for (Task task : taskListNew) {
+                    if (task.isTodo()) todoListNew.add(task.getName());
+                    if (task.isPlanned()) planListNew.add(task.getName());
+                }
+
+                //planning.json aktualisieren mit aktuellem Datum und aktuellem Aufgabenplan
+                if (writePlanningJson(filePlanning, currentDate, planListNew, todoListNew)) {
+                    //in Model hinterlegtes Datum updaten
+                    planDate = currentDate;
+                    //Propertylisten von Aufgabenplan, Aufgabenliste und Todoliste updaten
+                    taskListAllProperty().getValue().setAll(taskListNew);
+                    stringListTodoProperty().getValue().setAll(todoListNew);
+                    stringListPlanProperty().getValue().setAll(planListNew);
+                } else {
+                    System.out.println("Aufgabenplan konnte nicht aktualisiert werden!");
+                }
+            }
+
 
         } catch (IOException iOEx) {
             iOEx.printStackTrace();
@@ -183,20 +255,17 @@ public class Model {
     public boolean writeNewTask() {
 
         //Validierung der Eingabeparameter
-        boolean isValid = true;
         StringBuilder stringInvalid = new StringBuilder();
         //Validierung des Namens
         String name = newTaskNameProperty().getValue();
         //Test, ob Aufgabenname leer ist
         if (name.isEmpty()) {
             stringInvalid.append("Aufgabenname ist leer! \n");
-            isValid = false;
         } else {
             //Test, ob Aufgabenname einzigartig ist
-            for (Task task : taskListAllProperty.getValue()) {
+            for (Task task : taskListAllProperty().getValue()) {
                 if (name.equals(task.getName())) {
                     stringInvalid.append("Aufgabenname ist schon vorhanden! \n");
-                    isValid = false;
                 }
             }
         }
@@ -204,46 +273,161 @@ public class Model {
         int repeat = -1;
         if (newTaskRepeatProperty().getValue().isEmpty()) {//Test ob in Wiederholung etwas geschrieben wurde
             stringInvalid.append("Wiederholung ist leer! \n");
-            isValid = false;
         } else {
             //Test, ob Aufgabenwiederholung einem Integer entspricht
             try{
                 repeat = Integer.parseInt(newTaskRepeatProperty().getValue());
                 //Test, ob Wiederholung in akzeptablen Bereich ist
-                if(repeat < 0 | repeat > 100) {
-                    stringInvalid.append("Wiederholung außerhalb des Bereichs 0 - 99 \n");
-                    isValid = false;
+                if (repeat < 0 | repeat > 200) {
+                    stringInvalid.append("Wiederholung ist keine valide Nummer \n");
                 }
             }catch(NumberFormatException numEx) {
                 stringInvalid.append("Wiederholung ist keine Nummer! \n");
-                isValid = false;
             }
         }
-
         //Rückgabe von "false", wenn Aufgabenparameter nicht valide sind
-        if (isValid == false) {
+        if (!stringInvalid.isEmpty()) {
             this.setNewTaskValidationProperty(stringInvalid.toString());
             return false;
         }
 
-        //neue Aufgabenliste erstellen, die geschrieben werden soll
-        List<Task> listNew = new ArrayList<>();
-        //alle vorhandenen Aufgaben aus Aufgabenfile einlesen und in neue Liste schreiben
-        try {
-            listNew.addAll(readTasksJson(fileTasks));
-        } catch (IOException ex) {
-            System.out.println("In der writeNewTask-Methode vom Model konnte die Aufgabenliste nicht eingelesen werden!");
-            ex.printStackTrace();
-            return false;
-        }
+        //neue Aufgabenliste erstellen mit allen Aufgaben
+        List<Task> listNew = new ArrayList<>(taskListAllProperty());
+
         //neue Aufgabe in neue Liste schreiben
-        listNew.add(new Task(name, repeat, newTaskRolloverProperty.getValue()));
+        Task newTask = new Task(name, repeat, newTaskRolloverProperty().getValue());
+        listNew.add(newTask);
 
         //Aufgaben in File schreiben,und falls dies nicht funktioniert false zurückgeben
         if (!writeTasksJson(fileTasks, listNew)) return false;
-        //nach erfolgreichem Schreiben taskListAllProperty neu
+        //nach erfolgreichem Schreiben taskListAllProperty neu populieren
         taskListAllProperty().setAll(listNew);
-        //taskListAllProperty().getValue().addAll(listNew);
+
+        //Wiederholungsaufgabe in todo und plan schreiben
+        if (repeat > 0) {
+            ArrayList<String> newTodoList = new ArrayList<>(stringListPlanProperty().get());
+            ArrayList<String> newPlanList = new ArrayList<>(stringListPlanProperty().get());
+            newTodoList.add(name);
+            newPlanList.add(name);
+            if (writePlanningJson(filePlanning, planDate, newPlanList, newTodoList)) {
+                stringListPlanProperty().setAll(newPlanList);
+                stringListTodoProperty().setAll(newTodoList);
+                int taskIndex = taskListAllProperty().get().indexOf(newTask);
+                taskListAllProperty().getValue().get(taskIndex).setPlanned(true);
+                taskListAllProperty().getValue().get(taskIndex).setTodo(true);
+            } else {
+                System.out.println("Wiederholungsaufgabe konnte nicht im filePlanning gespeichert werden!");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void loadChangeTask() {
+        Task changeTask = selectedTaskProperty().getValue();
+        newTaskNameProperty().setValue(changeTask.getName());
+        newTaskRepeatProperty().setValue(Integer.toString(changeTask.getRepeat()));
+        newTaskRolloverProperty().set(changeTask.isRollover());
+    }
+
+    /**
+     * @return true, wenn Aufgabe nicht verändert wurde oder die Aufgabe geändert wurde und erfolgreich geschrieben wurde
+     * <br> false, wenn die Aufgabe nicht geschrieben werden konnte
+     */
+    public boolean writeChangedTask() {
+        //Validierung der Eingabeparameter
+        StringBuilder stringInvalid = new StringBuilder();
+        //Validierung Aufgabenwiederholung
+        int repeat = 0;
+        if (newTaskRepeatProperty().getValue().isEmpty()) {//Test ob in Wiederholung etwas geschrieben wurde
+            stringInvalid.append("Wiederholung ist leer! \n");
+        } else {
+            //Test, ob Aufgabenwiederholung einem Integer entspricht
+            try {
+                repeat = Integer.parseInt(newTaskRepeatProperty().getValue());
+                //Test, ob Wiederholung in akzeptablen Bereich ist
+                if (repeat < 0 | repeat > 200) {
+                    stringInvalid.append("Wiederholung ist keine valide Nummer \n");
+                }
+            } catch (NumberFormatException numEx) {
+                stringInvalid.append("Wiederholung ist keine Nummer! \n");
+            }
+        }
+        //Rückgabe von "false", wenn Aufgabenparameter nicht valide sind
+        if (!stringInvalid.isEmpty()) {
+            this.setNewTaskValidationProperty(stringInvalid.toString());
+            return false;
+        }
+        //Wenn die Aufgabe nicht verändert wurde, muss auch nichts neu in die Dateien geschrieben werden
+        Task changedTask = new Task(selectedTaskProperty().getValue().getName(), repeat, newTaskRolloverProperty().get());
+        if (selectedTaskProperty().getValue().getDateLastDone() != null)
+            changedTask.setDateLastDone(selectedTaskProperty().getValue().getDateLastDone());
+        if (selectedTaskProperty().getValue().equals(changedTask)) {
+            return true;
+        }
+
+        //Bei Änderung der Aufgabenwiederholung, muss getestet werden ob sich etwas in der Todoliste oder der Planliste ändern
+        if (selectedTaskProperty().getValue().getRepeat() != changedTask.getRepeat()) {//Wiederholung wurde geändert
+            if (selectedTaskProperty().getValue().getRepeat() == 0) {//Wiederholung wurde von 0 auf positive Zahl geändert
+                if (changedTask.getDateLastDone() == null) {
+                    changedTask.setTodo(true);
+                    changedTask.setPlanned(true);
+                } else {
+                    if (changedTask.getDateLastDone().until(planDate, ChronoUnit.DAYS) >= changedTask.getRepeat()) {
+                        changedTask.setTodo(true);
+                        changedTask.setPlanned(true);
+                    }
+                }
+            } else {//Wiederholung wurde von positiver Zahl auf 0 oder andere positive Zahl geändert
+                if (changedTask.getRepeat() == 0) {//Wiederholung wurde von positiver Zahl zu 0 geändert
+                    changedTask.setTodo(false);
+                    changedTask.setPlanned(false);
+                } else {//Wiederholung wurde von einer positiven Zahl zu einer anderen positiven Zahl geändert
+                    if (changedTask.getDateLastDone() == null) {
+                        changedTask.setTodo(true);
+                        changedTask.setPlanned(true);
+                    } else {
+                        if (changedTask.getDateLastDone().until(planDate, ChronoUnit.DAYS) >= changedTask.getRepeat()) {
+                            changedTask.setTodo(true);
+                            changedTask.setPlanned(true);
+                        } else {
+                            changedTask.setTodo(false);
+                            changedTask.setPlanned(false);
+                        }
+                    }
+                }
+            }
+        }
+        if (changedTask.isTodo() != stringListTodoProperty().contains(changedTask.getName()) ||
+                changedTask.isPlanned() != stringListPlanProperty().contains(changedTask.getName())) {
+            ArrayList<String> listPlanNew = new ArrayList<>(stringListPlanProperty().getValue());
+            ArrayList<String> listTodoNew = new ArrayList<>(stringListPlanProperty().getValue());
+
+            if (changedTask.isPlanned()) {
+                listPlanNew.add(changedTask.getName());
+            } else {
+                listPlanNew.remove(changedTask.getName());
+            }
+
+            if (changedTask.isTodo()) {
+                listTodoNew.add(changedTask.getName());
+            } else {
+                listTodoNew.remove(changedTask.getName());
+            }
+
+            if (!writePlanningJson(filePlanning, planDate, listPlanNew, listTodoNew)) return false;
+            stringListPlanProperty().setAll(listPlanNew);
+            stringListTodoProperty().setAll(listTodoNew);
+        }
+
+        //temporären Aufgabenplan erstellen und aktualisieren
+        ArrayList<Task> listTaskNew = new ArrayList<>(taskListAllProperty().getValue());
+        listTaskNew.remove(selectedTaskProperty().getValue());
+        listTaskNew.add(changedTask);
+        //Aufgaben in File schreiben,und falls dies nicht funktioniert false zurückgeben
+        if (!writeTasksJson(fileTasks, listTaskNew)) return false;
+        //nach erfolgreichem Schreiben taskListAllProperty neu populieren
+        taskListAllProperty().setAll(listTaskNew);
         return true;
     }
 
@@ -262,8 +446,8 @@ public class Model {
         taskListAllProperty().setAll(listNew);
 
         //Aufgabe aus TodoListe und planListe löschen und in Datei schreiben, bei vorhandensein
-        ArrayList<String> todoListNew = new ArrayList<>(stringListTodoProperty());
-        ArrayList<String> planListNew = new ArrayList<>(stringListPlanProperty());
+        ArrayList<String> todoListNew = new ArrayList<>(stringListTodoProperty().getValue());
+        ArrayList<String> planListNew = new ArrayList<>(stringListPlanProperty().getValue());
         boolean stringListChanged = false;
         if (stringListTodoProperty().contains(deletedTask.getName())) {
             todoListNew.remove(deletedTask.getName());
@@ -273,8 +457,8 @@ public class Model {
             planListNew.remove(deletedTask.getName());
             stringListChanged = true;
         }
-        if (stringListChanged = true) {
-            if (!writePlanningJson(filePlanning, todoListNew, planListNew)) {
+        if (stringListChanged) {
+            if (!writePlanningJson(filePlanning, planDate, todoListNew, planListNew)) {
                 return false;
             }
             stringListPlanProperty().setAll(planListNew);
@@ -303,7 +487,7 @@ public class Model {
             newList.add(taskToSignIn.getName());
         }
         //Aufgabe in filePlan schreiben und bei Erfolg in Plannungsliste eintragen
-        if (writePlanningJson(filePlanning, newList, stringListTodoProperty())) {
+        if (writePlanningJson(filePlanning, planDate, newList, stringListTodoProperty())) {
             stringListPlanProperty().getValue().add(taskToSignIn.getName());
         } else {
             return false;
@@ -325,7 +509,7 @@ public class Model {
         newList.remove(taskToSignOut);
 
         //temporäre Liste in filePlanning schreiben und Propertys updaten
-        if (writePlanningJson(filePlanning, newList, stringListTodoProperty)) {
+        if (writePlanningJson(filePlanning, planDate, newList, stringListTodoProperty().getValue())) {
             //stringListProperty für mainWindow updaten
             stringListPlanProperty().getValue().setAll(newList);
             //taskListProperty für taskOverview updaten
@@ -359,7 +543,7 @@ public class Model {
         newPlanList.remove(taskDone);
 
         //temporäre Liste in filePlanning schreiben und Propertys updaten
-        if (writePlanningJson(filePlanning, newPlanList, newTodoList)) {
+        if (writePlanningJson(filePlanning, planDate, newPlanList, newTodoList)) {
             //stringListProperty für mainWindow updaten
             stringListPlanProperty().getValue().setAll(newPlanList);
             //stringListTodoProperty updaten
@@ -369,6 +553,12 @@ public class Model {
             if (indexTaskDone != -1) {
                 taskListAllProperty().getValue().get(indexTaskDone).setTodo(false);
                 taskListAllProperty().getValue().get(indexTaskDone).setPlanned(false);
+
+                taskListAllProperty().getValue().get(indexTaskDone).setDateLastDone(LocalDate.now());
+                if (!writeTasksJson(fileTasks, taskListAllProperty())) {
+                    System.err.println("Datum konnte nicht geschrieben werden, weil es Fehler beim Schreiben in das Aufgabenfile gab!");
+                    Platform.exit();
+                }
             } else {
                 System.out.println("Aufgabe aus Aufgabenplan gelöscht, die nicht in Aufgabenliste exisitiert!");
             }
@@ -381,6 +571,7 @@ public class Model {
         return true;
     }
 
+
     /*
     public boolean writeNewTodoString()
     public boolean writeDeleteTodoString()
@@ -388,13 +579,13 @@ public class Model {
     writeDeletePlanString()
      */
 
-    private boolean writePlanningJson(File filePlanning, List<String> listPlan, List<String> listTodo) {
+    private boolean writePlanningJson(File filePlanning, LocalDate planDate, List<String> listPlan, List<String> listTodo) {
         try (FileWriter fileWriter = new FileWriter(filePlanning);
              JsonWriter jsonWriter = new JsonWriter(fileWriter)) {
             jsonWriter.setIndent("    ");
             jsonWriter.beginObject();
 
-            //writeDate()
+            writeDate(jsonWriter, planDate);
             writePlanArray(jsonWriter, listPlan);
             writeTodoArray(jsonWriter, listTodo);
 
@@ -406,7 +597,6 @@ public class Model {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-
 
         return true;
     }
@@ -433,8 +623,9 @@ public class Model {
         jsonWriter.endArray();
     }
 
-    private void writeDate(JsonWriter jsonWriter, Date date) {
-
+    private void writeDate(JsonWriter jsonWriter, LocalDate date) throws IOException {
+        jsonWriter.name("planDate");
+        jsonWriter.value(dateFormat.format(date));
     }
 
 
@@ -446,14 +637,14 @@ public class Model {
             jsonReader.beginObject();
             while (jsonReader.hasNext()) {
                 switch (jsonReader.nextName()) {
-                    case "date":
-                        jsonReader.nextString();
+                    case "planDate":
+                        planDate = readPlanDate(jsonReader);
                         break;
                     case "plan":
-                        stringListPlanProperty.addAll(readPlanArray(jsonReader));
+                        stringListPlanProperty().getValue().addAll(readPlanArray(jsonReader));
                         break;
                     case "todo":
-                        stringListTodoProperty.addAll(readTodoArray(jsonReader));
+                        stringListTodoProperty().getValue().addAll(readTodoArray(jsonReader));
                         break;
                     default:
                         System.err.println("Unbekannter Name in Datei: " + filePlanning);
@@ -464,11 +655,15 @@ public class Model {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        //TODO: Rückgabewert überdenken, da bie Fehlerfall Exception gethrowed wird
+
         return true;
     }
 
-    public List<String> readTodoArray(JsonReader jsonReader) throws IOException {
+    private LocalDate readPlanDate(JsonReader jsonReader) throws IOException {
+        return LocalDate.parse(jsonReader.nextString(), dateFormat);
+    }
+
+    private List<String> readTodoArray(JsonReader jsonReader) throws IOException {
         ArrayList<String> retArray = new ArrayList<>();
 
         jsonReader.beginArray();
@@ -480,7 +675,7 @@ public class Model {
         return retArray;
     }
 
-    public List<String> readPlanArray(JsonReader jsonReader) throws IOException {
+    private List<String> readPlanArray(JsonReader jsonReader) throws IOException {
         ArrayList<String> retArray = new ArrayList<>();
 
         jsonReader.beginArray();
@@ -498,7 +693,7 @@ public class Model {
      * @param listTasks
      * @return Rückgabe von true, wenn alle Aufgaben erfolgreich in die Datei geschrieben wurden
      */
-    public boolean writeTasksJson(File fileTasks, List<Task> listTasks) {
+    private boolean writeTasksJson(File fileTasks, List<Task> listTasks) {
         try{
 
             if (!fileTasks.exists()) {
@@ -523,7 +718,7 @@ public class Model {
         return true;
     }
 
-    public void writeTaskArray(JsonWriter jsonWriter, List<Task> listTasks) throws IOException {
+    private void writeTaskArray(JsonWriter jsonWriter, List<Task> listTasks) throws IOException {
         jsonWriter.beginArray();
         for (Task task : listTasks) {
             writeTask(jsonWriter, task);
@@ -531,11 +726,16 @@ public class Model {
         jsonWriter.endArray();
     }
 
-    public void writeTask(JsonWriter jsonWriter, Task task) throws IOException {
+    private void writeTask(JsonWriter jsonWriter, Task task) throws IOException {
         jsonWriter.beginObject();
         jsonWriter.name("name").value(task.getName());
         jsonWriter.name("repeat").value(Integer.toString(task.getRepeat()));
         jsonWriter.name("rollover").value(Boolean.toString(task.isRollover()));
+        if (task.getDateLastDone() == null) {
+            jsonWriter.name("dateLastDone").nullValue();
+        } else {
+            jsonWriter.name("dateLastDone").value(dateFormat.format(task.getDateLastDone()));
+        }
         jsonWriter.endObject();
     }
 
@@ -545,7 +745,7 @@ public class Model {
      * @return
      * @throws IOException
      */
-    public ArrayList<Task> readTasksJson(File fileTasks) throws IOException {
+    private ArrayList<Task> readTasksJson(File fileTasks) throws IOException {
         if (fileTasks.length() == 0) return new ArrayList<Task>();
         try (FileReader fileReader = new FileReader(fileTasks);
              JsonReader jsonReader = new JsonReader(fileReader)) {
@@ -555,7 +755,7 @@ public class Model {
         //Leserechte für Datei sicherstellen sonst Fehlermeldung
     }
 
-    public ArrayList<Task> readTasksArray(JsonReader reader) throws IOException{
+    private ArrayList<Task> readTasksArray(JsonReader reader) throws IOException {
         //was passiert bei leeren Array?
         ArrayList<Task> returnArray = new ArrayList<>();
 
@@ -567,7 +767,7 @@ public class Model {
         return returnArray;
     }
 
-    public Task readTask(JsonReader reader) throws IOException{
+    private Task readTask(JsonReader reader) throws IOException {
         //richtiges File öffnen
         //File einlesen
             //Informationen in Graph speichern(aufpassen das Graph nicht zu groß wird wegen Speicher)
@@ -575,6 +775,7 @@ public class Model {
         String name = "";
         int repeat = 0;
         boolean rollover = false;
+        LocalDate dateLastDone = null;
 
         try{
             reader.beginObject();
@@ -589,6 +790,13 @@ public class Model {
                     case ("rollover"):
                         rollover = Boolean.parseBoolean(reader.nextString());
                         break;
+                    case ("dateLastDone"):
+                        if (reader.peek() == JsonToken.NULL) {
+                            reader.nextNull();
+                        } else {
+                            dateLastDone = LocalDate.parse(reader.nextString(), dateFormat);
+                        }
+                        break;
                     default:
                         System.err.println("Model: Unbekanntes Aufgabenattribut bei lesen von JSON-File: " +
                                 fileTasks + "!");
@@ -601,7 +809,12 @@ public class Model {
         }catch(Exception ex) {
             ex.printStackTrace();
         }
-        return new Task(name, repeat, rollover);
+
+        if (dateLastDone != null) {
+            return new Task(name, repeat, rollover, dateLastDone);
+        } else {
+            return new Task(name, repeat, rollover);
+        }
     }
 
     public int findIndexOfTaskByName(String name, List<Task> taskList) {
@@ -646,7 +859,7 @@ public class Model {
         return newTaskRepeatProperty;
     }
 
-    public SimpleBooleanProperty newTaskActiveProperty() {
+    public SimpleBooleanProperty newTaskRolloverProperty() {
         return newTaskRolloverProperty;
     }
 

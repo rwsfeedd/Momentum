@@ -24,15 +24,18 @@
             <Label text="Wiederholung aller x Tage, wobei bei 0 keine Wiederholung auftritt"/>
             <TextField fx:id="textfieldRepeat" promptText="Eingabe von x Tagen"/>
             <!-- Eingabe Rollover -->
-            <Label text="Aufgabe als Aktiv schalten"/>
+            <Label text="Rollover zu nächstem Tag"/>
             <HBox>
                 <fx:define>
-                    <ToggleGroup fx:id="groupButtonsActive"/>
+                    <ToggleGroup fx:id="groupButtonsRollover"/>
                 </fx:define>
-                <!--2 ToggleButtons für Active-->
-                <RadioButton fx:id="buttonSetTrue" text="aktiviert" selected="true"
-                             toggleGroup="$groupButtonsActive"/>
-                <RadioButton text="deaktiviert" toggleGroup="$groupButtonsActive"/>
+                <!--2 ToggleButtons für Rollover-->
+                <RadioButton fx:id="buttonSetRollover" text="aktiviert"
+                             toggleGroup="$groupButtonsRollover"/>
+                <RadioButton text="deaktiviert"
+                             toggleGroup="$groupButtonsRollover"
+                             selected="true"
+                />
             </HBox>
             <Label fx:id="validationLabel" textFill="red"/>
         </VBox>

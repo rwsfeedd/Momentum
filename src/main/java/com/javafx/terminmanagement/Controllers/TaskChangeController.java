@@ -5,16 +5,20 @@ import com.javafx.terminmanagement.StartApplication;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class TaskCreationController {
+public class TaskChangeController {
     @FXML
-    private TextField textfieldName;
+    private Label labelName;
     @FXML
     private TextField textfieldRepeat;
     @FXML
-    private RadioButton buttonSetRollover;
+    private RadioButton buttonSetRolloverOn;
+    @FXML
+    private RadioButton buttonSetRolloverOff;
     @FXML
     private Label validationLabel;
 
@@ -28,13 +32,16 @@ public class TaskCreationController {
         model.setNewTaskValidationProperty("");
 
         //Binding von Aufgabenname
-        model.newTaskNameProperty().bindBidirectional(textfieldName.textProperty());
+        labelName.textProperty().bind(model.newTaskNameProperty());
         //Binding von Aufgabenwiederholung
         model.newTaskRepeatProperty().bindBidirectional(textfieldRepeat.textProperty());
         //Binding von Aufgabenrollover
-        model.newTaskRolloverProperty().bindBidirectional(buttonSetRollover.selectedProperty());
+        model.newTaskRolloverProperty().bindBidirectional(buttonSetRolloverOn.selectedProperty());
+        buttonSetRolloverOff.selectedProperty().bind(model.newTaskRolloverProperty().not());
         //Binding für Label um Nutzer invalide Aufgabe zu zeigen
         validationLabel.textProperty().bind(model.newTaskValidationProperty());
+
+        model.loadChangeTask();
     }
 
     /**
@@ -43,7 +50,7 @@ public class TaskCreationController {
     @FXML
     public void onSaveButtonClick() {
         Model model = Model.getInstance();
-        if (model.writeNewTask()) {
+        if (model.writeChangedTask()) {
 
             Stage stage = model.getStage();
             try {
@@ -72,7 +79,7 @@ public class TaskCreationController {
 
         Stage stage = model.getStage();
 
-        try{
+        try {
             //Die Objekthierarchie aus dem zugehörigen XML Dokument laden
             FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("taskOverviewView.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 640, 480);
@@ -81,7 +88,7 @@ public class TaskCreationController {
             stage.setTitle("Terminmanagement");
             stage.setScene(scene);
             stage.show();
-        }catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

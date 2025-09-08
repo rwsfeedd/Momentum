@@ -25,7 +25,7 @@ public class MainWindowController {
      * Knopf um Aufgabenübersicht zu laden
      */
     @FXML
-    protected void onTaskOverviewButtonClick(){
+    public void onTaskOverviewButtonClick() {
 
         //Hauptstage vom Mastercontroller holen
         Model controller = Model.getInstance();
@@ -33,7 +33,7 @@ public class MainWindowController {
 
         try{
             //Die Objekthierarchie aus dem zugehörigen XML Dokument laden
-            FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("taskOverview-view.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("taskOverviewView.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 640, 480);
 
             //Stage initialisieren und darstellen
@@ -49,7 +49,7 @@ public class MainWindowController {
      * Knopf um ausgewählte Aufgabe aus Tagesplan auszutragen
      */
     @FXML
-    protected void onTaskSignOutButtonClick() {
+    public void onTaskSignOutButtonClick() {
         Model model = Model.getInstance();
         //System.out.println(model.selectedStringProperty().getValue());
         if (!model.writeSignOutTask()) {
@@ -62,7 +62,7 @@ public class MainWindowController {
      * Knopf um ausgewählte Aufgabe als abgearbeitet zu speichern
      */
     @FXML
-    protected void onTaskDoneButtonClick() {
+    public void onTaskDoneButtonClick() {
         Model model = Model.getInstance();
         if (!model.writeDoneTask()) {
             System.err.println("Aufgabe konnte nicht fertiggestellt werden!");

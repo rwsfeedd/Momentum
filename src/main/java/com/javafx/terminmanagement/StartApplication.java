@@ -7,6 +7,11 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 public class StartApplication extends Application {
 
@@ -14,11 +19,11 @@ public class StartApplication extends Application {
     public void start(Stage stage) throws IOException {
 
 
-        //Weitergabe der Hauptstage an den Hauptcontroller
+        //Weitergabe der Hauptstage an das Model
         Model model = new Model(stage);
 
         //Hauptfenster laden und anzeigen
-        FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("mainWindow-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("mainWindowView.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 640, 480);
         stage.setTitle("Terminmanagement");
         stage.setScene(scene);

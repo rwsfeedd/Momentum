@@ -8,6 +8,4 @@ module com.javafx.terminmanagement {
     exports com.javafx.terminmanagement;
     exports com.javafx.terminmanagement.Controllers;
     opens com.javafx.terminmanagement.Controllers to javafx.fxml;
-    exports com.javafx.terminmanagement.JSON;
-    opens com.javafx.terminmanagement.JSON to javafx.fxml;
 }
