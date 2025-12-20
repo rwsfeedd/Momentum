@@ -6,6 +6,7 @@ import com.google.gson.stream.JsonWriter;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
+import javafx.scene.control.Tab;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -44,6 +45,9 @@ public class Model {
     private final SimpleObjectProperty<String> selectedStringProperty = new SimpleObjectProperty<>();
     //Property für die Auswahl von einem Element aus ListView von taskOverview
     private final SimpleObjectProperty<Task> selectedTaskProperty = new SimpleObjectProperty<>();
+
+    //private final SimpleObjectProperty<Tab> selectedTab = new SimpleObjectProperty<>();
+    //private final SimpleBooleanProperty createTabClosedProperty = new SimpleBooleanProperty(false);
 
     private final SimpleListProperty<String> stringListPlanProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     //Property für MainWindowView
@@ -870,6 +874,12 @@ public class Model {
     public SimpleStringProperty newTaskValidationProperty() {
         return newTaskValidationProperty;
     }
+
+    /*
+    public SimpleBooleanProperty createTabClosedProperty() {
+        return createTabClosedProperty;
+    }
+    */
 
     /*
     public SimpleBooleanProperty newTaskCheckNeedProperty() {

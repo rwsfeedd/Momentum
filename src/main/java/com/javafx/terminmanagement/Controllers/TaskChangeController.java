@@ -55,7 +55,7 @@ public class TaskChangeController {
             Stage stage = model.getStage();
             try {
                 //Die Objekthierarchie aus dem zugehörigen XML Dokument laden
-                FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("taskOverviewView.fxml"));
+                FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("mainWindowView.fxml"));
                 Scene scene = new Scene(fxmlLoader.load(), 640, 480);
 
                 //Stage initialisieren und darstellen
@@ -81,7 +81,7 @@ public class TaskChangeController {
 
         try {
             //Die Objekthierarchie aus dem zugehörigen XML Dokument laden
-            FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("taskOverviewView.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("mainWindowView.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 640, 480);
 
             //Stage initialisieren und darstellen

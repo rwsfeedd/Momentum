@@ -9,16 +9,66 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.AnchorPane?>
+
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ToggleGroup?>
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.javafx.terminmanagement.Controllers.MainWindowController">
     <center>
-        <ListView fx:id="taskList"/>
+        <TabPane fx:id="tabPane">
+            <Tab fx:id="previousTab" text="Vergangenheit" closable="false">
+
+            </Tab>
+            <Tab fx:id="dailyTab" text="Tagesliste" closable="false">
+                <ListView fx:id="dailyList"/>
+            </Tab>
+            <Tab fx:id="nextTab" text="Zukunft" closable="false">
+
+            </Tab>
+            <Tab fx:id="allTasksTab" text="Aufgabenliste" closable="false">
+                <ListView fx:id="allList"/>
+            </Tab>
+            <Tab fx:id="createTaskTab" text="erstellen" closable="false">
+                <VBox>
+                    <!-- Eingabe Name -->
+                    <Label text="Name"/>
+                    <TextField fx:id="textFieldName" promptText="Name der Aufgabe"/>
+                    <!-- Eingabe Wiederholung -->
+                    <Label text="Wiederholung aller x Tage, wobei bei 0 keine Wiederholung auftritt"/>
+                    <TextField fx:id="textFieldRepeat" promptText="Eingabe von x Tagen"/>
+                    <!-- Eingabe Rollover -->
+                    <Label text="Rollover zu nächstem Tag"/>
+                    <HBox>
+                        <fx:define>
+                            <ToggleGroup fx:id="groupButtonsRollover"/>
+                        </fx:define>
+                        <!--2 ToggleButtons für Rollover-->
+                        <RadioButton fx:id="buttonSetRollover" text="aktiviert"
+                                     toggleGroup="$groupButtonsRollover"/>
+                        <RadioButton text="deaktiviert"
+                                     toggleGroup="$groupButtonsRollover"
+                                     selected="true"
+                        />
+                    </HBox>
+                    <Label fx:id="validationLabel" textFill="red"/>
+                </VBox>
+            </Tab>
+        </TabPane>
     </center>
     <right>
         <VBox>
-            <Button text="Aufgabenübersicht" onAction="#onTaskOverviewButtonClick"/>
-            <Button text="Aufgabe austragen" onAction="#onTaskSignOutButtonClick"/>
-            <Button text="Aufgabe fertigstellen" onAction="#onTaskDoneButtonClick"/>
+            <!-- <Button text="Aufgabenübersicht" onAction="#onTaskOverviewButtonClick"/> -->
+            <Button fx:id="signOutButton" text="Aufgabe austragen" onAction="#onTaskSignOutButtonClick"/>
+            <Button fx:id="taskDoneButton" text="Aufgabe fertigstellen" onAction="#onTaskDoneButtonClick"/>
+            <Button fx:id="taskCreateButton" text="Aufgabe erstellen" onAction="#onTaskCreateButtonClick"/>
+            <Button fx:id="taskChangeButton" text="Aufgabe bearbeiten" onAction="#onTaskChangeButtonClick"/>
+            <Button fx:id="taskDeleteButton" text="Aufgabe löschen" onAction="#onTaskDeleteButtonClick"/>
+            <Button fx:id="signInButton" text="Aufgabe eintragen" onAction="#onTaskSignInButtonClick"/>
+            <Button fx:id="taskSaveButton" text="Speichern" onAction="#onSaveButtonClick"/>
         </VBox>
     </right>
 </BorderPane>
