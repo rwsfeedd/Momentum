@@ -4,6 +4,8 @@ import com.google.gson.stream.JsonWriter;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class JSONWriter {
@@ -12,8 +14,6 @@ public class JSONWriter {
     public JSONWriter(JsonWriter jsonWriter) throws IOException{
         this.jsonWriter = jsonWriter;
         jsonWriter.setIndent("    ");
-        jsonWriter.beginObject();
-
     }
 
     public void writeStringArray(String listName, List<String> stringList)  throws IOException{
@@ -24,5 +24,10 @@ public class JSONWriter {
         jsonWriter.endArray();
        //writeTodoArray
        //writePlanArray
+    }
+
+    public void writeDate(String name, LocalDate date) throws IOException {
+        jsonWriter.name("planDate");
+        jsonWriter.value(Model.dateFormat.format(date));
     }
 }

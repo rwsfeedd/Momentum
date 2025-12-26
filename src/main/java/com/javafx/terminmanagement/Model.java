@@ -30,7 +30,7 @@ public class Model {
     private static Stage stage;
 
     //internationales Datumsformat nach ISO 8601, mit dem alle lese- und schreibvorgänge von Datumsangaben getätigt werden
-    public final DateTimeFormatter dateFormat = DateTimeFormatter.ISO_LOCAL_DATE;
+    public static final DateTimeFormatter dateFormat = DateTimeFormatter.ISO_LOCAL_DATE;
     //Datum, für das der Aufgabenplan gemacht wurde. wird bei Programmstart aktualisiert
     private LocalDate planDate;
 
@@ -579,15 +579,17 @@ public class Model {
     private boolean writePlanningJson(File filePlanning, LocalDate planDate, List<String> listPlan, List<String> listTodo) {
         try (FileWriter fileWriter = new FileWriter(filePlanning);
              JsonWriter gsonWriter = new JsonWriter(fileWriter)) {
+
             JSONWriter jsonWriter = new JSONWriter(gsonWriter);
 
-            writeDate(gsonWriter, planDate); //TODO
-            jsonWriter.writeStringArray("plan", listPlan);
-            jsonWriter.writeStringArray("todo", listPlan);
+            gsonWriter.beginObject();
 
-            //Alle gepufferten Daten fertig schreiben
-            gsonWriter.flush();
-            fileWriter.flush();
+            jsonWriter.writeDate("planDate", planDate);
+            jsonWriter.writeStringArray("plan", listPlan);
+            jsonWriter.writeStringArray("todo", listTodo);
+
+            gsonWriter.endObject();
+
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -608,10 +610,7 @@ public class Model {
     }
      */
 
-    private void writeDate(JsonWriter jsonWriter, LocalDate date) throws IOException {
-        jsonWriter.name("planDate");
-        jsonWriter.value(dateFormat.format(date));
-    }
+
 
 
     //alle Listen und Datum einlesen in die zugehörigen Propertys
