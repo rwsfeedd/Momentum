@@ -46,9 +46,6 @@ public class Model {
     //Property für die Auswahl von einem Element aus ListView von taskOverview
     private final SimpleObjectProperty<Task> selectedTaskProperty = new SimpleObjectProperty<>();
 
-    //private final SimpleObjectProperty<Tab> selectedTab = new SimpleObjectProperty<>();
-    //private final SimpleBooleanProperty createTabClosedProperty = new SimpleBooleanProperty(false);
-
     private final SimpleListProperty<String> stringListPlanProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     //Property für MainWindowView
     private final SimpleListProperty<String> stringListTodoProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -60,7 +57,6 @@ public class Model {
     private final SimpleStringProperty newTaskRepeatProperty = new SimpleStringProperty("0");
     private final SimpleBooleanProperty newTaskRolloverProperty = new SimpleBooleanProperty(false);
     private final SimpleStringProperty newTaskValidationProperty = new SimpleStringProperty();
-    //private final SimpleBooleanProperty newTaskCheckNeedProperty;
 
     public Model(Stage stage) {
         Model.stage = stage;
