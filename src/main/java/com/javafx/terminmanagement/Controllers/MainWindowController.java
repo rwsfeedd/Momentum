@@ -28,8 +28,6 @@ public class MainWindowController {
     @FXML
     private ListView<String> historyList;
 
-
-
     @FXML
     private TextField textFieldName;
     @FXML
@@ -38,9 +36,6 @@ public class MainWindowController {
     private RadioButton buttonSetRollover;
     @FXML
     private Label validationLabel;
-    @FXML
-    private Button taskSaveButton;
-
 
     @FXML
     private TabPane tabPane;
@@ -55,19 +50,6 @@ public class MainWindowController {
     @FXML
     private Tab createTaskTab;
 
-    @FXML
-    private Button signOutButton;
-    @FXML
-    private Button taskDoneButton;
-    @FXML
-    private Button taskCreateButton;
-    @FXML
-    private Button taskChangeButton;
-    @FXML
-    private Button taskDeleteButton;
-    @FXML
-    private Button signInButton;
-
     Model model;
 
     /**
@@ -76,7 +58,6 @@ public class MainWindowController {
     public void initialize() {
         model = Model.getInstance();
 
-        Model model = Model.getInstance();
         allList.itemsProperty().bind(model.taskListAllProperty());
         model.selectedTaskProperty().bind(allList.selectionModelProperty().getValue().selectedItemProperty());
 
@@ -97,30 +78,6 @@ public class MainWindowController {
         validationLabel.textProperty().bind(model.newTaskValidationProperty());
 
         historyList.itemsProperty().bind(model.stringListHistoryProperty());
-    }
-
-    /**
-     * Knopf um Aufgabenübersicht zu laden
-     */
-    @FXML
-    public void onTaskOverviewButtonClick() {
-
-        //Hauptstage vom Mastercontroller holen
-        Model controller = Model.getInstance();
-        Stage stage = controller.getStage();
-
-        try{
-            //Die Objekthierarchie aus dem zugehörigen XML Dokument laden
-            FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("taskOverviewView.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 640, 480);
-
-            //Stage initialisieren und darstellen
-            stage.setTitle("Terminmanagement");
-            stage.setScene(scene);
-            stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -169,7 +126,6 @@ public class MainWindowController {
      */
     @FXML
     public void onTaskChangeButtonClick() {
-
         //Hauptstage vom Model holen
         Model model = Model.getInstance();
         Stage stage = model.getStage();
@@ -212,29 +168,6 @@ public class MainWindowController {
     }
 
     /**
-     * Knopf um Hauptfenster zu laden und anzuzeigen
-     */
-    @FXML
-    public void onReturnButtonClick() {
-        //Hauptstage vom Model holen
-        Model controller = Model.getInstance();
-        Stage stage = controller.getStage();
-
-        try {
-            //Die Objekthierarchie aus dem zugehörigen XML Dokument laden
-            FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("mainWindowView.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 640, 480);
-
-            //Stage initialisieren und darstellen
-            stage.setTitle("Terminmanagement");
-            stage.setScene(scene);
-            stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Knopf um erstellte Aufgabe zu Speichern
      */
     @FXML
@@ -242,29 +175,6 @@ public class MainWindowController {
         Model model = Model.getInstance();
         if (model.writeNewTask()) {
             tabPane.getSelectionModel().select(allTasksTab);
-        }
-    }
-
-    /**
-     * Knopf um Aufgabenübersicht anzuzeigen
-     */
-    @FXML
-    public void onCancelButtonClick() {
-        Model model = Model.getInstance();
-
-        Stage stage = model.getStage();
-
-        try {
-            //Die Objekthierarchie aus dem zugehörigen XML Dokument laden
-            FXMLLoader fxmlLoader = new FXMLLoader(StartApplication.class.getResource("taskOverviewView.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 640, 480);
-
-            //Stage initialisieren und darstellen
-            stage.setTitle("Terminmanagement");
-            stage.setScene(scene);
-            stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }
