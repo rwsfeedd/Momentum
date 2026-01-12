@@ -292,10 +292,12 @@ public class Model {
             return false;
         }
 
+
         //neue Aufgabenliste erstellen mit allen Aufgaben
         List<Task> listNew = new ArrayList<>(taskListAllProperty());
 
         //neue Aufgabe in neue Liste schreiben
+        //letzte id finden und ++ benutzen
         Task newTask = new Task(name, repeat, newTaskRolloverProperty().getValue());
         listNew.add(newTask);
 

@@ -1,21 +1,14 @@
 {
-    "planDate": "2026-01-05",
+    "planDate": "2026-01-10",
     "plan": [
-        "gerhehh",
-        "gerashahe",
-        "asgafags",
-        "gregreg",
-        "test24",
-        "ret",
-        "jetzje"
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
     ],
-    "todo": [
-        "gerhehh",
-        "gerashahe",
-        "asgafags",
-        "gregreg",
-        "test24",
-        "ret",
-        "jetzje"
-    ]
+    "todo": []
 }

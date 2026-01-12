@@ -8,6 +8,7 @@ import java.util.Date;
 
 public class Task implements Serializable {
     //Attribute, die bei Erstellung beeinflusst werden
+    private int id;
     private String name;
     private int repeat; // 0->keine Wiederholung; 1->jeden Tag; 2->aller 2 Tage
     //private int nRepeat; // 0->keine Wiederholung; 1->1mal Wiederholen; 2->2mal Wiederholen //dayRepeat und nRepeat zusammenarbeit bei Tageswechsel?
@@ -23,7 +24,8 @@ public class Task implements Serializable {
      * @param repeat Wiederholung der Aufgabe aller repeat Tage
      * @param rollover Aufgabe wird bei Tageswechsel, wenn sie nicht fertiggestellt wurde, in den Plan geschrieben
      */
-    public Task(String name, int repeat, boolean rollover) {
+    public Task(int id, String name, int repeat, boolean rollover) {
+        this.id = id;
         this.name = name;
         this.repeat = repeat;
         this.rollover = rollover;
