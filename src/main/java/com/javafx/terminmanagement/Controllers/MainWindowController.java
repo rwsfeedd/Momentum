@@ -7,10 +7,14 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 public class MainWindowController {
+    //List for dailyTab
     @FXML
     private ListView<String> dailyList;
+
+    //List for allTasksTab
     @FXML
     private ListView<Task> allList;
+
     @FXML
     private ListView<String> historyList;
 

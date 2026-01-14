@@ -45,12 +45,13 @@ public class Model {
     private final SimpleMapProperty<Integer, Task> taskMapProperty = new SimpleMapProperty<>(FXCollections.observableHashMap());
     private final SimpleListProperty<Task> taskListProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
 
-
+    /*
     private final SimpleListProperty<String> stringListPlanProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     //Property für MainWindowView
     private final SimpleListProperty<String> stringListTodoProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final SimpleListProperty<Task> taskListAllProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final SimpleListProperty<String> stringListHistoryProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
+     */
 
     //Propertys for TaskCreationTab and TaskChangeTab
     private final SimpleStringProperty newTaskNameProperty = new SimpleStringProperty("");
@@ -240,11 +241,14 @@ public class Model {
             }
             */
 
+            /*
             for (int i = 0; i < taskMapProperty().size(); i++) {
                 int id = -1;
                 id = getNextIndex(i, taskMapProperty());
                 taskListProperty.add(taskMapProperty().get(id));
             }
+             */
+            taskListProperty().get().setAll(taskMapProperty().get().values());
 
         } catch (IOException iOEx) {
             iOEx.printStackTrace();

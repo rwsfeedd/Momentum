@@ -76,6 +76,7 @@ public class Task implements Serializable {
      */
     public String toString() {
         StringBuilder stringRet = new StringBuilder(name + ": Wiederholung: " + repeat);
+        if (id >= 0) stringRet.append(", id:" + id);
         if (isRollover()) stringRet.append(" ROLLOVER");
         if (isTodo()) stringRet.append(" TODO");
         if (isPlanned()) stringRet.append(" PLAN");
