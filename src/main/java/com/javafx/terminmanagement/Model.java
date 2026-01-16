@@ -290,13 +290,9 @@ public class Model {
             stringInvalid.append("Aufgabenname ist leer! \n");
         } else {
             //Test, ob Aufgabenname einzigartig ist
-            for (int i = 0; i < taskMapProperty().get().size(); i++) {
-                int id = -1;
-                while (id == -1 && i < taskMapProperty().get().size()) {
-                    if (taskMapProperty().get(id) != null) id = i;
-                    i++;
-                }
-                if (name.equals(taskMapProperty().get(id).getName())) {
+            LinkedList<Task> taskList = new LinkedList<>(taskMapProperty().get().values());
+            for (Task task : taskList) {
+                if (name.equals(task.getName())) {
                     stringInvalid.append("Aufgabenname ist schon vorhanden! \n");
                 }
             }
@@ -329,8 +325,9 @@ public class Model {
 
         //neue Aufgabe in neue Liste schreiben
         Task newTask = new Task(name, repeat, newTaskRolloverProperty().getValue());
-        incLastId();
-        mapNew.put(lastId, newTask);
+        System.out.println(newTask.toString());
+        System.out.println(mapNew.put(newTask.getId(), newTask));
+        System.out.println(mapNew.get(newTask.getId()));
 
         //Aufgaben in File schreiben,und falls dies nicht funktioniert false zurückgeben
         if (!writeTasksJson(fileTasks, mapNew)) return false;
@@ -723,7 +720,7 @@ public class Model {
     /**
      *
      * @param fileTasks
-     * @param listTasks
+     * @param mapTasks
      * @return Rückgabe von true, wenn alle Aufgaben erfolgreich in die Datei geschrieben wurden
      */
     private boolean writeTasksJson(File fileTasks, Map<Integer, Task> mapTasks) {
@@ -739,16 +736,11 @@ public class Model {
                 JsonWriter jsonWriter = new JsonWriter(fileWriter)) {
                 jsonWriter.setIndent("    ");
 
-                ArrayList<Task> listTasks = new ArrayList<>();
+                ArrayList<Task> listTasks = new ArrayList<>(mapTasks.values());
 
-                for (int i = 0; i < taskMapProperty().get().size(); i++) {
-                    int id = -1;
-                    while (id == -1 && i < taskMapProperty().get().size()) {
-                        if (taskMapProperty().get(id) != null) id = i;
-                        i++;
-                    }
-                    listTasks.add(taskMapProperty().get(id));
-                }
+                System.out.println("mapTasksSize:" + mapTasks.size());
+                System.out.println("mapTasksEntrys:" + mapTasks.toString());
+
                 writeTaskArray(jsonWriter, listTasks);
 
                 //Alle Streams fertig schreiben
@@ -772,6 +764,7 @@ public class Model {
 
     private void writeTask(JsonWriter jsonWriter, Task task) throws IOException {
         jsonWriter.beginObject();
+        jsonWriter.name("id").value(task.getId());
         jsonWriter.name("name").value(task.getName());
         jsonWriter.name("repeat").value(Integer.toString(task.getRepeat()));
         jsonWriter.name("rollover").value(Boolean.toString(task.isRollover()));

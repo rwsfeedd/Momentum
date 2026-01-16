@@ -47,6 +47,8 @@ public class Task implements Serializable {
      * @param dateLastDone letzte Durchführung der Aufgabe
      */
     public Task(String name, int repeat, boolean rollover, LocalDate dateLastDone) {
+        Model.incLastId();
+        this.id = Model.getLastId();
         this.name = name;
         this.repeat = repeat;
         this.rollover = rollover;
