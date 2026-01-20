@@ -38,6 +38,19 @@ public class Task implements Serializable {
         //this.checkNeed = checkNeed;
     }
 
+    public Task(int id, String name, int repeat, boolean rollover) {
+        this.id = id;
+        this.name = name;
+        this.repeat = repeat;
+        this.rollover = rollover;
+
+        this.todo = false;
+        this.planned = false;
+
+        this.dateLastDone = null;
+        //this.checkNeed = checkNeed;
+    }
+
     /**
      * Mit dateLastDone erweiterter Konstruktor für Aufgaben, wo todo und planned mit false initialisiert werden
      *
@@ -49,6 +62,19 @@ public class Task implements Serializable {
     public Task(String name, int repeat, boolean rollover, LocalDate dateLastDone) {
         Model.incLastId();
         this.id = Model.getLastId();
+        this.name = name;
+        this.repeat = repeat;
+        this.rollover = rollover;
+
+        this.todo = false;
+        this.planned = false;
+
+        this.dateLastDone = dateLastDone;
+        //this.checkNeed = checkNeed;
+    }
+
+    public Task(int id, String name, int repeat, boolean rollover, LocalDate dateLastDone) {
+        this.id = id;
         this.name = name;
         this.repeat = repeat;
         this.rollover = rollover;

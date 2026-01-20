@@ -6,6 +6,8 @@ import com.google.gson.stream.JsonWriter;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -43,7 +45,7 @@ public class Model {
     private static int lastId;
 
     private final SimpleMapProperty<Integer, Task> taskMapProperty = new SimpleMapProperty<>(FXCollections.observableHashMap());
-    private final SimpleListProperty<Task> taskListProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final SimpleListProperty<Task> taskListProperty = new SimpleListProperty<>(FXCollections.observableArrayList(taskMapProperty().getValue().values()));
 
     /*
     private final SimpleListProperty<String> stringListPlanProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -133,7 +135,9 @@ public class Model {
                     System.out.println("Aufgabe: " + task.getName() + " konnte nicht in taskMapProperty eingetragen werden, da die Id schon vorhanden ist!");
                     continue;
                 }
-                taskMapProperty().get().put(id, task);
+                HashMap<Integer, Task> newMap = new HashMap<>(taskMapProperty().getValue());
+                newMap.put(id, task);
+                setTaskMapProperty(FXCollections.observableMap(newMap));
             }
 
             //Stringliste für Tagesplan, noch zu machende Aufgaben und Datum mit Werten füllen
@@ -248,7 +252,7 @@ public class Model {
                 taskListProperty.add(taskMapProperty().get(id));
             }
              */
-            taskListProperty().get().setAll(taskMapProperty().get().values());
+            setTaskListProperty(taskMapProperty.get().values());
 
         } catch (IOException iOEx) {
             iOEx.printStackTrace();
@@ -281,9 +285,9 @@ public class Model {
      */
     public boolean writeNewTask() {
 
-        //Validierung der Eingabeparameter
+        //String used to print invalid Taskpropertys to User
         StringBuilder stringInvalid = new StringBuilder();
-        //Validierung des Namens
+        //Validation of the name
         String name = newTaskNameProperty().getValue();
         //Test, ob Aufgabenname leer ist
         if (name.isEmpty()) {
@@ -321,18 +325,20 @@ public class Model {
 
 
         //neue Aufgabenliste erstellen mit allen Aufgaben
-        HashMap<Integer, Task> mapNew = new HashMap<>(taskMapProperty());
+        HashMap<Integer, Task> mapNew = new HashMap<>(taskMapProperty().get());
 
         //neue Aufgabe in neue Liste schreiben
         Task newTask = new Task(name, repeat, newTaskRolloverProperty().getValue());
-        System.out.println(newTask.toString());
-        System.out.println(mapNew.put(newTask.getId(), newTask));
-        System.out.println(mapNew.get(newTask.getId()));
+        System.out.println("New Task:" + newTask.toString());
+        System.out.println("Return of HashMap.put() in Model:WriteNewTask()" + mapNew.put(newTask.getId(), newTask));
+        System.out.println("Return of HashMap.get() in Model:WriteNewTask()" + mapNew.get(newTask.getId()));
 
         //Aufgaben in File schreiben,und falls dies nicht funktioniert false zurückgeben
         if (!writeTasksJson(fileTasks, mapNew)) return false;
         //nach erfolgreichem Schreiben taskListAllProperty neu populieren
-        taskMapProperty().set(FXCollections.observableMap(mapNew));
+        //setTaskMapProperty(FXCollections.observableMap(mapNew));
+        System.out.println("After PropertyWrite in Model:WriteNewTask() taskListProperty():" + taskListProperty().get().toString());
+        System.out.println("After PropertyWrite in Model:WriteNewTask() taskListProperty:" + taskListProperty.get().toString());
 
         /*
         //Wiederholungsaufgabe in todo und plan schreiben
@@ -475,17 +481,15 @@ public class Model {
         if (selectedTaskProperty().getValue() == null) return false;
         Task deletedTask = selectedTaskProperty().getValue();
 
-        taskMapProperty().get(deletedTask);
-
         //Aufgabe aus Aufgabenliste löschen
         HashMap<Integer, Task> mapNew = new HashMap<>(taskMapProperty().get());
-        mapNew.remove(deletedTask);
+        mapNew.remove(deletedTask.getId());
 
         //neue Aufgabenliste schreiben
         if (!writeTasksJson(fileTasks, mapNew)) {
             return false;
         }
-        taskMapProperty().set(FXCollections.observableMap(mapNew));
+        setTaskMapProperty(FXCollections.observableMap(mapNew));
 
         /* ergänzen
         //Aufgabe aus TodoListe und planListe löschen und in Datei schreiben, bei vorhandensein
@@ -738,14 +742,21 @@ public class Model {
 
                 ArrayList<Task> listTasks = new ArrayList<>(mapTasks.values());
 
-                System.out.println("mapTasksSize:" + mapTasks.size());
-                System.out.println("mapTasksEntrys:" + mapTasks.toString());
+                //System.out.println("Model:writeTasksJson() mapTasksSize:" + mapTasks.size());
+                System.out.println("Model:writeTaskJson(File: " + fileTasks.toString());
+                System.out.println(", Map: " + mapTasks.toString());
+                System.out.println(", listTasksEntrys:" + listTasks.toString());
 
                 writeTaskArray(jsonWriter, listTasks);
 
                 //Alle Streams fertig schreiben
-                jsonWriter.flush();
+                //jsonWriter.flush();
                 fileWriter.flush();
+
+                setTaskMapProperty(FXCollections.observableMap(mapTasks));
+
+                System.out.println(", taskMapProperty: " + taskMapProperty().get().toString());
+
             }
         } catch (IOException ioEx) {
             ioEx.printStackTrace();
@@ -822,6 +833,7 @@ public class Model {
                 switch(reader.nextName()){
                     case ("id"):
                         id = reader.nextInt();
+                        if (id > lastId) incLastId();
                         break;
                     case("name"): name = reader.nextString();
                         break;
@@ -852,9 +864,9 @@ public class Model {
         }
 
         if (dateLastDone != null) {
-            return new Task(name, repeat, rollover, dateLastDone);
+            return new Task(id, name, repeat, rollover, dateLastDone);
         } else {
-            return new Task(name, repeat, rollover);
+            return new Task(id, name, repeat, rollover);
         }
     }
 
@@ -904,8 +916,16 @@ public class Model {
         return taskMapProperty;
     }
 
+    public void setTaskMapProperty(ObservableMap<Integer, Task> newMap) {
+        taskMapProperty.setValue(newMap);
+    }
+
     public SimpleListProperty<Task> taskListProperty() {
         return taskListProperty;
+    }
+
+    public void setTaskListProperty(Collection<Task> newList) {
+        taskListProperty.setAll(newList);
     }
 
     public SimpleObjectProperty<String> selectedStringProperty() {

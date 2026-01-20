@@ -2,6 +2,8 @@ package com.javafx.terminmanagement.Controllers;
 
 import com.javafx.terminmanagement.Model;
 import com.javafx.terminmanagement.Task;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableMap;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -64,8 +66,8 @@ public class MainWindowController {
         model = Model.getInstance();
 
         tabPane.getSelectionModel().select(dailyTab);
-
         allList.itemsProperty().bind(model.taskListProperty());
+        //model.taskListProperty().bind(model.taskListProperty());
         model.selectedTaskProperty().bind(allList.selectionModelProperty().getValue().selectedItemProperty());
 
         //dailyList.itemsProperty().bind(model.stringListPlanProperty());
