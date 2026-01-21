@@ -44,8 +44,8 @@ public class Model {
 
     private static int lastId;
 
-    private final SimpleMapProperty<Integer, Task> taskMapProperty = new SimpleMapProperty<>(FXCollections.observableHashMap());
-    private final SimpleListProperty<Task> taskListProperty = new SimpleListProperty<>(FXCollections.observableArrayList(taskMapProperty().getValue().values()));
+    //private final SimpleMapProperty<Integer, Task> taskMapProperty = new SimpleMapProperty<>(FXCollections.observableHashMap());
+    private final SimpleListProperty<Task> taskListProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     /*
     private final SimpleListProperty<String> stringListPlanProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -131,13 +131,15 @@ public class Model {
                     System.out.println("Aufgabe: " + task.getName() + " hat keine id");
                     continue;
                 }
-                if (taskMapProperty().get().containsKey(id)) {
-                    System.out.println("Aufgabe: " + task.getName() + " konnte nicht in taskMapProperty eingetragen werden, da die Id schon vorhanden ist!");
-                    continue;
+                for (int i = 0; i < taskListProperty().get().size(); i++) {
+                    if (taskListProperty().get(i).getId() == task.getId()) {
+                        System.out.println("Aufgabe: " + task.getName() + " konnte nicht in taskListProperty eingetragen werden, da die Id schon vorhanden ist!");
+                    }
                 }
-                HashMap<Integer, Task> newMap = new HashMap<>(taskMapProperty().getValue());
-                newMap.put(id, task);
-                setTaskMapProperty(FXCollections.observableMap(newMap));
+
+                ArrayList<Task> newList = new ArrayList<>(taskListProperty().getValue());
+                newList.add(task);
+                setTaskListProperty(FXCollections.observableList(newList));
             }
 
             //Stringliste für Tagesplan, noch zu machende Aufgaben und Datum mit Werten füllen
@@ -252,7 +254,6 @@ public class Model {
                 taskListProperty.add(taskMapProperty().get(id));
             }
              */
-            setTaskListProperty(taskMapProperty.get().values());
 
         } catch (IOException iOEx) {
             iOEx.printStackTrace();
@@ -294,10 +295,10 @@ public class Model {
             stringInvalid.append("Aufgabenname ist leer! \n");
         } else {
             //Test, ob Aufgabenname einzigartig ist
-            LinkedList<Task> taskList = new LinkedList<>(taskMapProperty().get().values());
-            for (Task task : taskList) {
+            for (Task task : taskListProperty()) {
                 if (name.equals(task.getName())) {
                     stringInvalid.append("Aufgabenname ist schon vorhanden! \n");
+                    break;
                 }
             }
         }
@@ -325,16 +326,15 @@ public class Model {
 
 
         //neue Aufgabenliste erstellen mit allen Aufgaben
-        HashMap<Integer, Task> mapNew = new HashMap<>(taskMapProperty().get());
+        ArrayList<Task> listNew = new ArrayList<>(taskListProperty().get());
 
         //neue Aufgabe in neue Liste schreiben
         Task newTask = new Task(name, repeat, newTaskRolloverProperty().getValue());
         System.out.println("New Task:" + newTask.toString());
-        System.out.println("Return of HashMap.put() in Model:WriteNewTask()" + mapNew.put(newTask.getId(), newTask));
-        System.out.println("Return of HashMap.get() in Model:WriteNewTask()" + mapNew.get(newTask.getId()));
+        System.out.println("Model:WriteNewTask() -> return of listNew.add(newTask)" + listNew.add(newTask));
 
         //Aufgaben in File schreiben,und falls dies nicht funktioniert false zurückgeben
-        if (!writeTasksJson(fileTasks, mapNew)) return false;
+        if (!writeTasksJson(fileTasks, listNew)) return false;
         //nach erfolgreichem Schreiben taskListAllProperty neu populieren
         //setTaskMapProperty(FXCollections.observableMap(mapNew));
         System.out.println("After PropertyWrite in Model:WriteNewTask() taskListProperty():" + taskListProperty().get().toString());
@@ -480,16 +480,30 @@ public class Model {
     public boolean writeDeletedTask() {
         if (selectedTaskProperty().getValue() == null) return false;
         Task deletedTask = selectedTaskProperty().getValue();
+        //System.out.println("Model:writeDeletedTask() -> Task to delete: " + deletedTask.getName());
 
         //Aufgabe aus Aufgabenliste löschen
-        HashMap<Integer, Task> mapNew = new HashMap<>(taskMapProperty().get());
-        mapNew.remove(deletedTask.getId());
+        ArrayList<Task> listNew = new ArrayList<>(taskListProperty().get());
+
+        int index = -1;
+        for (int i = 0; i < listNew.size(); i++) {
+            if (listNew.get(i).equals(deletedTask)) {
+                index = i;
+                break;
+            }
+        }
+        if (index > -1) {
+            listNew.remove(index);
+        } else {
+            System.out.println("Model:writeDeleteTask() -> attempt to delete nonexistent task!");
+        }
+
 
         //neue Aufgabenliste schreiben
-        if (!writeTasksJson(fileTasks, mapNew)) {
+        if (!writeTasksJson(fileTasks, listNew)) {
             return false;
         }
-        setTaskMapProperty(FXCollections.observableMap(mapNew));
+        setTaskListProperty(FXCollections.observableList(listNew));
 
         /* ergänzen
         //Aufgabe aus TodoListe und planListe löschen und in Datei schreiben, bei vorhandensein
@@ -724,10 +738,10 @@ public class Model {
     /**
      *
      * @param fileTasks
-     * @param mapTasks
+     * @param listTasks
      * @return Rückgabe von true, wenn alle Aufgaben erfolgreich in die Datei geschrieben wurden
      */
-    private boolean writeTasksJson(File fileTasks, Map<Integer, Task> mapTasks) {
+    private boolean writeTasksJson(File fileTasks, List<Task> listTasks) {
         try{
 
             if (!fileTasks.exists()) {
@@ -740,11 +754,8 @@ public class Model {
                 JsonWriter jsonWriter = new JsonWriter(fileWriter)) {
                 jsonWriter.setIndent("    ");
 
-                ArrayList<Task> listTasks = new ArrayList<>(mapTasks.values());
-
                 //System.out.println("Model:writeTasksJson() mapTasksSize:" + mapTasks.size());
                 System.out.println("Model:writeTaskJson(File: " + fileTasks.toString());
-                System.out.println(", Map: " + mapTasks.toString());
                 System.out.println(", listTasksEntrys:" + listTasks.toString());
 
                 writeTaskArray(jsonWriter, listTasks);
@@ -753,9 +764,9 @@ public class Model {
                 //jsonWriter.flush();
                 fileWriter.flush();
 
-                setTaskMapProperty(FXCollections.observableMap(mapTasks));
+                setTaskListProperty(FXCollections.observableList(listTasks));
 
-                System.out.println(", taskMapProperty: " + taskMapProperty().get().toString());
+                System.out.println(", taskMapProperty: " + taskListProperty().get().toString());
 
             }
         } catch (IOException ioEx) {
@@ -870,36 +881,6 @@ public class Model {
         }
     }
 
-    public int findIndexOfTaskByName(String name, List<Task> taskList) {
-        for (int i = 0; i < taskList.size(); i++) {
-            if (taskList.get(i).getName().equals(name)) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    /**
-     * @param currentInt Index where Function starts the search for the next Id
-     * @param taskMap    Map which is the one to be searched
-     * @return returns -1 if no Index was found which is greater than currentInt, or the id if the next entry in the taskMap
-     */
-    public int getNextIndex(int currentInt, Map<Integer, Task> taskMap) {
-        if (currentInt < 0) return -1;
-        if (taskMap == null || taskMap.isEmpty()) return -1;
-        int id = -1;
-        for (int i = currentInt; i < taskMapProperty().get().size(); i++) {
-            while (id == -1 && i < taskMapProperty().get().size()) {
-                if (taskMapProperty().get(id) != null) id = i;
-                i++;
-            }
-
-        }
-
-        return id;
-    }
-
     public Stage getStage() {
         return stage;
     }
@@ -912,6 +893,7 @@ public class Model {
         lastId++;
     }
 
+    /*
     public SimpleMapProperty<Integer, Task> taskMapProperty() {
         return taskMapProperty;
     }
@@ -919,6 +901,7 @@ public class Model {
     public void setTaskMapProperty(ObservableMap<Integer, Task> newMap) {
         taskMapProperty.setValue(newMap);
     }
+     */
 
     public SimpleListProperty<Task> taskListProperty() {
         return taskListProperty;
