@@ -67,7 +67,6 @@ public class MainWindowController {
 
         tabPane.getSelectionModel().select(dailyTab);
         allList.itemsProperty().bind(model.taskListProperty());
-        //model.taskListProperty().bind(model.taskListProperty());
         model.selectedTaskProperty().bind(allList.selectionModelProperty().getValue().selectedItemProperty());
 
         //dailyList.itemsProperty().bind(model.stringListPlanProperty());
@@ -145,12 +144,13 @@ public class MainWindowController {
     public void onTaskChangeButtonClick() {
         //Hauptstage vom Model holen
         Model model = Model.getInstance();
-        Stage stage = model.getStage();
-
         if (model.selectedTaskProperty().getValue() == null) {
             return;
         }
-
+        if (!model.writeChangedTask()) {
+            System.out.println("MainWindowController:onTaskChangeButtonClick() -> Task: "
+                    + model.selectedTaskProperty().getValue().toString() + " couldn't be changed!");
+        }
         tabPane.getSelectionModel().select(changeTaskTab);
     }
 
@@ -158,9 +158,9 @@ public class MainWindowController {
     public void onTaskDeleteButtonClick() {
         Model model = Model.getInstance();
         if (!model.writeDeletedTask()) {
-            System.out.println("Fehler beim Löschen der Aufgabe!");
+            System.out.println("MainWindowController:onTaskDeleteButtonClick() -> Task: "
+                    + model.selectedTaskProperty().getValue().toString() + "couldn't be deleted!");
         }
-
     }
 
     /**

@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -285,6 +286,10 @@ public class Model {
      * @return Rückgabe von "true", nur wenn Aufgabe erfolgreich geschrieben werden konnte
      */
     public boolean writeNewTask() {
+        System.out.println("Model:writeNewTask() Propertys: "
+                + "-> Task: " + selectedTaskProperty().getValue().toString()
+                + "-> newTaskNameProperty" + newTaskNameProperty().getValue()
+                + "-> newTaskRepeatProperty" + newTaskRepeatProperty().getValue());
 
         //String used to print invalid Taskpropertys to User
         StringBuilder stringInvalid = new StringBuilder();
@@ -378,7 +383,7 @@ public class Model {
         //Validierung der Eingabeparameter
         StringBuilder stringInvalid = new StringBuilder();
         //Validation if Task is selected
-        if (newTaskNameProperty.getValue().isEmpty()) stringInvalid.append("Keine Aufgabe ausgewählt! \n");
+        if (newTaskNameProperty().getValue().isEmpty()) stringInvalid.append("Keine Aufgabe ausgewählt! \n");
         //Validierung Aufgabenwiederholung
         int repeat = 0;
         if (newTaskRepeatProperty().getValue().isEmpty()) {//Test ob in Wiederholung etwas geschrieben wurde
@@ -401,14 +406,14 @@ public class Model {
             return false;
         }
         //Wenn die Aufgabe nicht verändert wurde, muss auch nichts neu in die Dateien geschrieben werden
-        Task changedTask = new Task(selectedTaskProperty().getValue().getName(), repeat, newTaskRolloverProperty().get());
+        Task changedTask = new Task(selectedTaskProperty().get().getId(), selectedTaskProperty().getValue().getName(), repeat, newTaskRolloverProperty().get());
         if (selectedTaskProperty().getValue().getDateLastDone() != null)
             changedTask.setDateLastDone(selectedTaskProperty().getValue().getDateLastDone());
         if (selectedTaskProperty().getValue().equals(changedTask)) {
             return true;
         }
 
-        /*
+
         //Bei Änderung der Aufgabenwiederholung, muss getestet werden ob sich etwas in der Todoliste oder der Planliste ändern
         if (selectedTaskProperty().getValue().getRepeat() != changedTask.getRepeat()) {//Wiederholung wurde geändert
             if (selectedTaskProperty().getValue().getRepeat() == 0) {//Wiederholung wurde von 0 auf positive Zahl geändert
@@ -441,6 +446,7 @@ public class Model {
                 }
             }
         }
+        /*
         if (changedTask.isTodo() != stringListTodoProperty().contains(changedTask.getName()) ||
                 changedTask.isPlanned() != stringListPlanProperty().contains(changedTask.getName())) {
             ArrayList<String> listPlanNew = new ArrayList<>(stringListPlanProperty().getValue());
@@ -462,16 +468,16 @@ public class Model {
             stringListPlanProperty().setAll(listPlanNew);
             stringListTodoProperty().setAll(listTodoNew);
         }
+        */
 
         //temporären Aufgabenplan erstellen und aktualisieren
-        ArrayList<Task> listTaskNew = new ArrayList<>(taskListAllProperty().getValue());
+        ArrayList<Task> listTaskNew = new ArrayList<>(taskListProperty().getValue());
         listTaskNew.remove(selectedTaskProperty().getValue());
         listTaskNew.add(changedTask);
         //Aufgaben in File schreiben,und falls dies nicht funktioniert false zurückgeben
         if (!writeTasksJson(fileTasks, listTaskNew)) return false;
         //nach erfolgreichem Schreiben taskListAllProperty neu populieren
-        taskListAllProperty().setAll(listTaskNew);
-         */
+        taskListProperty().setAll(listTaskNew);
 
         return true;
     }
