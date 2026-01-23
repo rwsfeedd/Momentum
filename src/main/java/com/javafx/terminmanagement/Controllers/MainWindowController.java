@@ -22,7 +22,7 @@ public class MainWindowController {
 
     //createTab
     @FXML
-    private TextField textFieldName;
+    private TextField textFieldNameCreate;
     @FXML
     private TextField textFieldCreateRepeat;
     @FXML
@@ -32,7 +32,7 @@ public class MainWindowController {
 
     //changeTab
     @FXML
-    private Label labelName;
+    private TextField textFieldNameChange;
     @FXML
     private TextField textFieldChangeRepeat;
     @FXML
@@ -67,6 +67,7 @@ public class MainWindowController {
 
         tabPane.getSelectionModel().select(dailyTab);
         allList.itemsProperty().bind(model.taskListProperty());
+        //model.taskListProperty().bind(model.taskListProperty());
         model.selectedTaskProperty().bind(allList.selectionModelProperty().getValue().selectedItemProperty());
 
         //dailyList.itemsProperty().bind(model.stringListPlanProperty());
@@ -77,13 +78,13 @@ public class MainWindowController {
         model.setNewTaskValidationProperty("");
 
         //Bindings for createTaskTab
-        model.newTaskNameProperty().bindBidirectional(textFieldName.textProperty());
+        model.newTaskNameProperty().bindBidirectional(textFieldNameCreate.textProperty());
         model.newTaskRepeatProperty().bindBidirectional(textFieldCreateRepeat.textProperty());
         model.newTaskRolloverProperty().bindBidirectional(buttonSetCreateRollover.selectedProperty());
         validationCreateLabel.textProperty().bind(model.newTaskValidationProperty());
 
         //Bindings for changeTaskTab
-        labelName.textProperty().bind(model.newTaskNameProperty());
+        model.newTaskNameProperty().bindBidirectional(textFieldNameChange.textProperty());
         model.newTaskRepeatProperty().bindBidirectional(textFieldChangeRepeat.textProperty());
         model.newTaskRolloverProperty().bindBidirectional(buttonSetChangeRolloverOn.selectedProperty());
         validationChangeLabel.textProperty().bind(model.newTaskValidationProperty());
@@ -143,14 +144,13 @@ public class MainWindowController {
     @FXML
     public void onTaskChangeButtonClick() {
         //Hauptstage vom Model holen
-        Model model = Model.getInstance();
+
         if (model.selectedTaskProperty().getValue() == null) {
             return;
         }
-        if (!model.writeChangedTask()) {
-            System.out.println("MainWindowController:onTaskChangeButtonClick() -> Task: "
-                    + model.selectedTaskProperty().getValue().toString() + " couldn't be changed!");
-        }
+
+        model.loadChangeTask();
+
         tabPane.getSelectionModel().select(changeTaskTab);
     }
 
@@ -158,9 +158,9 @@ public class MainWindowController {
     public void onTaskDeleteButtonClick() {
         Model model = Model.getInstance();
         if (!model.writeDeletedTask()) {
-            System.out.println("MainWindowController:onTaskDeleteButtonClick() -> Task: "
-                    + model.selectedTaskProperty().getValue().toString() + "couldn't be deleted!");
+            System.out.println("Fehler beim Löschen der Aufgabe!");
         }
+
     }
 
     /**

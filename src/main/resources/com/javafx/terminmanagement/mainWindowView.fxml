@@ -65,7 +65,7 @@
                     <VBox>
                         <!-- Eingabe Name -->
                         <Label text="Name"/>
-                        <TextField fx:id="textFieldName" promptText="Name der Aufgabe"/>
+                        <TextField fx:id="textFieldNameCreate" promptText="Name der Aufgabe"/>
                         <!-- Eingabe Wiederholung -->
                         <Label text="Wiederholung aller x Tage, wobei bei 0 keine Wiederholung auftritt"/>
                         <TextField fx:id="textFieldCreateRepeat" promptText="Eingabe von x Tagen"/>
@@ -99,10 +99,10 @@
                     <VBox>
                         <!-- Anzeige Name -->
                         <Label text="Name"/>
-                        <Label fx:id="labelName" textFill="gray"/>
+                        <TextField fx:id="textFieldNameChange" promptText="Name der Aufgabe"/>
                         <!-- Eingabe Wiederholung -->
                         <Label text="Wiederholung aller x Tage, wobei bei 0 keine Wiederholung auftritt"/>
-                        <TextField fx:id="textFieldChangeRepeat"/>
+                        <TextField fx:id="textFieldChangeRepeat" promptText="Eingabe von x Tagen"/>
                         <!-- Eingabe Rollover -->
                         <Label text="Rollover zu nächstem Tag"/>
                         <HBox>
