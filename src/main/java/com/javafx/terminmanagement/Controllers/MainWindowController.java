@@ -4,6 +4,8 @@ import com.javafx.terminmanagement.Model;
 import com.javafx.terminmanagement.Task;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -66,6 +68,13 @@ public class MainWindowController {
         model = Model.getInstance();
 
         tabPane.getSelectionModel().select(dailyTab);
+        createTaskTab.setOnSelectionChanged(new EventHandler<Event>() {
+            @Override
+            public void handle(Event event) {
+                if (createTaskTab.isSelected()) model.resetNewTaskPropertys();
+            }
+        });
+
         allList.itemsProperty().bind(model.taskListProperty());
         //model.taskListProperty().bind(model.taskListProperty());
         model.selectedTaskProperty().bind(allList.selectionModelProperty().getValue().selectedItemProperty());

@@ -339,7 +339,10 @@ public class Model {
         System.out.println("Model:WriteNewTask() -> return of listNew.add(newTask)" + listNew.add(newTask));
 
         //Aufgaben in File schreiben,und falls dies nicht funktioniert false zurückgeben
-        if (!writeTasksJson(fileTasks, listNew)) return false;
+        if (!writeTasksJson(fileTasks, listNew)) {
+            System.out.println("FEHLER WIRKLICH GEFUNDEN!");
+            return false;
+        }
         //nach erfolgreichem Schreiben taskListAllProperty neu populieren
         //setTaskMapProperty(FXCollections.observableMap(mapNew));
         System.out.println("After PropertyWrite in Model:WriteNewTask() taskListProperty():" + taskListProperty().get().toString());
@@ -384,6 +387,8 @@ public class Model {
         StringBuilder stringInvalid = new StringBuilder();
         //Validation if Task is selected
         if (newTaskNameProperty().getValue().isEmpty()) stringInvalid.append("Keine Aufgabe ausgewählt! \n");
+        //Validation of Taskname TODO
+        //if(newTaskNameProperty().getValue())
         //Validierung Aufgabenwiederholung
         int repeat = 0;
         if (newTaskRepeatProperty().getValue().isEmpty()) {//Test ob in Wiederholung etwas geschrieben wurde
@@ -748,6 +753,7 @@ public class Model {
      * @return Rückgabe von true, wenn alle Aufgaben erfolgreich in die Datei geschrieben wurden
      */
     private boolean writeTasksJson(File fileTasks, List<Task> listTasks) {
+        System.out.println("Model:writeTaskJson() listTasks:" + listTasks.toString());
         try{
 
             if (!fileTasks.exists()) {
@@ -897,6 +903,14 @@ public class Model {
 
     public static void incLastId() {
         lastId++;
+    }
+
+    public boolean resetNewTaskPropertys() {
+        newTaskNameProperty().setValue("");
+        newTaskRepeatProperty().setValue("");
+        newTaskRolloverProperty().setValue(false);
+
+        return true;
     }
 
     /*
