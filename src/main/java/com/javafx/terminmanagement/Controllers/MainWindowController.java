@@ -10,6 +10,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+
 public class MainWindowController {
     //List for dailyTab
     @FXML
@@ -68,12 +70,15 @@ public class MainWindowController {
         model = Model.getInstance();
 
         tabPane.getSelectionModel().select(dailyTab);
+
+        /*
         createTaskTab.setOnSelectionChanged(new EventHandler<Event>() {
             @Override
             public void handle(Event event) {
                 if (createTaskTab.isSelected()) model.resetNewTaskPropertys();
             }
         });
+         */
 
         allList.itemsProperty().bind(model.taskListProperty());
         //model.taskListProperty().bind(model.taskListProperty());
@@ -93,9 +98,9 @@ public class MainWindowController {
         validationCreateLabel.textProperty().bind(model.newTaskValidationProperty());
 
         //Bindings for changeTaskTab
-        model.newTaskNameProperty().bindBidirectional(textFieldNameChange.textProperty());
-        model.newTaskRepeatProperty().bindBidirectional(textFieldChangeRepeat.textProperty());
-        model.newTaskRolloverProperty().bindBidirectional(buttonSetChangeRolloverOn.selectedProperty());
+        //model.newTaskNameProperty().bindBidirectional(textFieldNameChange.textProperty());
+        //model.newTaskRepeatProperty().bindBidirectional(textFieldChangeRepeat.textProperty());
+        //model.newTaskRolloverProperty().bindBidirectional(buttonSetChangeRolloverOn.selectedProperty());
         validationChangeLabel.textProperty().bind(model.newTaskValidationProperty());
 
         //historyList.itemsProperty().bind(model.stringListHistoryProperty());
@@ -106,6 +111,7 @@ public class MainWindowController {
      */
     @FXML
     public void onTaskSignOutButtonClick() {
+        System.out.println("MainWindowController:onTaskSignOutButtonClick() -> button pressed");
         Model model = Model.getInstance();
         //System.out.println(model.selectedStringProperty().getValue());
         /*
@@ -121,6 +127,7 @@ public class MainWindowController {
      */
     @FXML
     public void onTaskDoneButtonClick() {
+        System.out.println("MainWindowController:onTaskDoneButtonClick() -> button pressed");
         Model model = Model.getInstance();
         /*
         if (!model.writeDoneTask()) {
@@ -135,6 +142,8 @@ public class MainWindowController {
      */
     @FXML
     public void onTaskCreateButtonClick() {
+        System.out.println("MainWindowController:onTaskCreateButtonClick() -> button pressed");
+        model.resetNewTaskPropertys();
         tabPane.getSelectionModel().select(createTaskTab);
         /*
         if(model.createTabClosedProperty().get()) {
@@ -152,6 +161,7 @@ public class MainWindowController {
      */
     @FXML
     public void onTaskChangeButtonClick() {
+        System.out.println("MainWindowController:onTaskChangedButtonClick() -> button pressed");
         //Hauptstage vom Model holen
 
         if (model.selectedTaskProperty().getValue() == null) {
@@ -165,6 +175,7 @@ public class MainWindowController {
 
     @FXML
     public void onTaskDeleteButtonClick() {
+        System.out.println("MainWindowController:onTaskDeleteButtonClick() -> button pressed");
         Model model = Model.getInstance();
         if (!model.writeDeletedTask()) {
             System.out.println("Fehler beim Löschen der Aufgabe!");
@@ -177,6 +188,7 @@ public class MainWindowController {
      */
     @FXML
     public void onTaskSignInButtonClick() {
+        System.out.println("MainWindowController:onTaskSignInButtonClick() -> button pressed");
         Model model = Model.getInstance();
         /*
         if (!model.writeSignInTask()) {
@@ -190,7 +202,7 @@ public class MainWindowController {
      */
     @FXML
     public void onSaveButtonClick() {
-        Model model = Model.getInstance();
+        System.out.println("MainWindowController:onSaveButtonClick() -> button pressed");
         if (createTaskTab.isSelected()) {
             if (model.writeNewTask()) tabPane.getSelectionModel().select(allTasksTab);
         } else {

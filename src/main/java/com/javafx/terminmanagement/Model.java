@@ -123,25 +123,25 @@ public class Model {
         //Einlesen der Aufgabenliste und der Stringlisten bei Programmstart
         try {
             //vollständige Taskliste mit Werten füllen
-            ArrayList<Task> allTasks = readTasksJson(fileTasks);
+            ArrayList<Task> oldList = readTasksJson(fileTasks);
+            ArrayList<Task> newList = new ArrayList<>(taskListProperty().getValue());
 
-            for (Task task : allTasks) {
+            for (Task task : oldList) {
                 int id = -1;
                 id = task.getId();
                 if (id == -1) {
                     System.out.println("Aufgabe: " + task.getName() + " hat keine id");
                     continue;
                 }
-                for (int i = 0; i < taskListProperty().get().size(); i++) {
-                    if (taskListProperty().get(i).getId() == task.getId()) {
+                for (int i = 0; i < oldList.size(); i++) {
+                    if (oldList.get(i).getId() == task.getId()) {
                         System.out.println("Aufgabe: " + task.getName() + " konnte nicht in taskListProperty eingetragen werden, da die Id schon vorhanden ist!");
                     }
                 }
-
-                ArrayList<Task> newList = new ArrayList<>(taskListProperty().getValue());
                 newList.add(task);
-                setTaskListProperty(FXCollections.observableList(newList));
             }
+            setTaskListProperty(FXCollections.observableList(newList));
+
 
             //Stringliste für Tagesplan, noch zu machende Aufgaben und Datum mit Werten füllen
             readPlanningJson(filePlanning);
@@ -287,9 +287,9 @@ public class Model {
      */
     public boolean writeNewTask() {
         System.out.println("Model:writeNewTask() Propertys: "
-                + "-> Task: " + selectedTaskProperty().getValue().toString()
-                + "-> newTaskNameProperty" + newTaskNameProperty().getValue()
-                + "-> newTaskRepeatProperty" + newTaskRepeatProperty().getValue());
+                + "-> Task: " + selectedTaskProperty().toString()
+                + "-> newTaskNameProperty:" + newTaskNameProperty().toString()
+                + "-> newTaskRepeatProperty:" + newTaskRepeatProperty().toString());
 
         //String used to print invalid Taskpropertys to User
         StringBuilder stringInvalid = new StringBuilder();
@@ -331,22 +331,22 @@ public class Model {
 
 
         //neue Aufgabenliste erstellen mit allen Aufgaben
-        ArrayList<Task> listNew = new ArrayList<>(taskListProperty().get());
+        ArrayList<Task> listNew = new ArrayList<>(taskListProperty().getValue());
+        System.out.println(", listNew Entrys before add() " + listNew.toString());
 
         //neue Aufgabe in neue Liste schreiben
         Task newTask = new Task(name, repeat, newTaskRolloverProperty().getValue());
-        System.out.println("New Task:" + newTask.toString());
-        System.out.println("Model:WriteNewTask() -> return of listNew.add(newTask)" + listNew.add(newTask));
+        System.out.println(", New Task:" + newTask.toString());
+        listNew.add(newTask);
+        System.out.println(", listNew Entrys " + listNew.toString());
 
         //Aufgaben in File schreiben,und falls dies nicht funktioniert false zurückgeben
         if (!writeTasksJson(fileTasks, listNew)) {
-            System.out.println("FEHLER WIRKLICH GEFUNDEN!");
+            System.err.println("Model:writeNewTask() -> writeTasksJson returned false!");
             return false;
         }
-        //nach erfolgreichem Schreiben taskListAllProperty neu populieren
-        //setTaskMapProperty(FXCollections.observableMap(mapNew));
-        System.out.println("After PropertyWrite in Model:WriteNewTask() taskListProperty():" + taskListProperty().get().toString());
-        System.out.println("After PropertyWrite in Model:WriteNewTask() taskListProperty:" + taskListProperty.get().toString());
+
+        setTaskListProperty(listNew);
 
         /*
         //Wiederholungsaufgabe in todo und plan schreiben
@@ -483,6 +483,9 @@ public class Model {
         if (!writeTasksJson(fileTasks, listTaskNew)) return false;
         //nach erfolgreichem Schreiben taskListAllProperty neu populieren
         taskListProperty().setAll(listTaskNew);
+
+        System.out.println("Model:writeChangedTask() was succesfull!");
+
 
         return true;
     }
@@ -753,22 +756,20 @@ public class Model {
      * @return Rückgabe von true, wenn alle Aufgaben erfolgreich in die Datei geschrieben wurden
      */
     private boolean writeTasksJson(File fileTasks, List<Task> listTasks) {
-        System.out.println("Model:writeTaskJson() listTasks:" + listTasks.toString());
-        try{
+        System.out.println("Model:writeTaskJson(File: " + fileTasks.toString());
+        System.out.println(", listTasksEntrys:" + listTasks.toString());
 
+        try{
             if (!fileTasks.exists()) {
                 if (!fileTasks.createNewFile()) {
-                    System.err.println("Datenfile konnte nicht erstellt werden!");
+                    System.err.println("Model:writeTaskJson() Datenfile konnte nicht erstellt werden!");
+                    //TODO fehlerbehandlung
                 }
             }
 
             try (FileWriter fileWriter = new FileWriter(fileTasks);
                 JsonWriter jsonWriter = new JsonWriter(fileWriter)) {
                 jsonWriter.setIndent("    ");
-
-                //System.out.println("Model:writeTasksJson() mapTasksSize:" + mapTasks.size());
-                System.out.println("Model:writeTaskJson(File: " + fileTasks.toString());
-                System.out.println(", listTasksEntrys:" + listTasks.toString());
 
                 writeTaskArray(jsonWriter, listTasks);
 
@@ -777,9 +778,6 @@ public class Model {
                 fileWriter.flush();
 
                 setTaskListProperty(FXCollections.observableList(listTasks));
-
-                System.out.println(", taskMapProperty: " + taskListProperty().get().toString());
-
             }
         } catch (IOException ioEx) {
             ioEx.printStackTrace();
@@ -906,6 +904,14 @@ public class Model {
     }
 
     public boolean resetNewTaskPropertys() {
+        /*
+        if(selectedTaskProperty().getValue() == null) {
+            ArrayList<Task> test = new ArrayList<>();
+            test.add(new Task());
+            setSelectedTaskProperty(test);
+        }
+         */
+
         newTaskNameProperty().setValue("");
         newTaskRepeatProperty().setValue("");
         newTaskRolloverProperty().setValue(false);
@@ -929,6 +935,11 @@ public class Model {
 
     public void setTaskListProperty(Collection<Task> newList) {
         taskListProperty.setAll(newList);
+        System.out.println("Model:setTaskListProperty(Collection<Task> newList" + taskListProperty().get().toString() + ")");
+    }
+
+    public void setSelectedTaskProperty(List<Task> newValue) {
+        this.taskListProperty().setValue(FXCollections.observableList(newValue));
     }
 
     public SimpleObjectProperty<String> selectedStringProperty() {

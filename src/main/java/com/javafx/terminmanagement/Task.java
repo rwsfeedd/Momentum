@@ -18,6 +18,18 @@ public class Task implements Serializable {
     private boolean todo;
     private LocalDate dateLastDone;
 
+    public Task() {
+        this.id = 0;
+        this.name = "";
+        this.repeat = 0;
+        this.rollover = false;
+
+        this.todo = false;
+        this.planned = false;
+
+        this.dateLastDone = null;
+    }
+
     /** Einfacher Konstruktor für Aufgaben, wo todo und planned mit false und dateLastDone mit null initialisiert werden
      *
      * @param name Name der Aufgabe
