@@ -98,9 +98,9 @@ public class MainWindowController {
         validationCreateLabel.textProperty().bind(model.newTaskValidationProperty());
 
         //Bindings for changeTaskTab
-        //model.newTaskNameProperty().bindBidirectional(textFieldNameChange.textProperty());
-        //model.newTaskRepeatProperty().bindBidirectional(textFieldChangeRepeat.textProperty());
-        //model.newTaskRolloverProperty().bindBidirectional(buttonSetChangeRolloverOn.selectedProperty());
+        model.newTaskNameProperty().bindBidirectional(textFieldNameChange.textProperty());
+        model.newTaskRepeatProperty().bindBidirectional(textFieldChangeRepeat.textProperty());
+        model.newTaskRolloverProperty().bindBidirectional(buttonSetChangeRolloverOn.selectedProperty());
         validationChangeLabel.textProperty().bind(model.newTaskValidationProperty());
 
         //historyList.itemsProperty().bind(model.stringListHistoryProperty());

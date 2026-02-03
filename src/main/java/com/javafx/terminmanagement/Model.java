@@ -373,9 +373,15 @@ public class Model {
 
     public void loadChangeTask() {
         Task changeTask = selectedTaskProperty().getValue();
+
+        System.out.println("(INFO) Model:loadChangeTask() loading values: " + changeTask.toString());
+
         newTaskNameProperty().setValue(changeTask.getName());
         newTaskRepeatProperty().setValue(Integer.toString(changeTask.getRepeat()));
         newTaskRolloverProperty().set(changeTask.isRollover());
+
+        System.out.println("(INFO) Model:loadChangeTask() Values in NewTaskPropertys after loading: "
+                + newTaskNameProperty().toString() + newTaskRepeatProperty().toString() + newTaskRolloverProperty().toString());
     }
 
     /**
