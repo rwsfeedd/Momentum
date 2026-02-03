@@ -1,5 +1,6 @@
 package com.javafx.terminmanagement;
 
+import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
@@ -122,8 +123,9 @@ public class Model {
 
 
         try {
-            ArrayList<Task> readList = readTasksJson(fileTasks);
-            ArrayList<Task> newList = new ArrayList<>(taskListProperty().getValue());
+            readTasksJson(fileTasks);
+            ArrayList<Task> readList = new ArrayList<>(taskListProperty().getValue());
+            ArrayList<Task> newList = new ArrayList<>();
 
             //validate read Task IDs
             for (int i = 0; i < readList.size(); i++) {
@@ -717,7 +719,7 @@ public class Model {
             while (jsonReader.hasNext()) {
                 switch (jsonReader.nextName()) {
                     case "planDate":
-                        planDate = readPlanDate(jsonReader);
+                        setPlanDate(readPlanDate(jsonReader));
                         break;
                         /*
                     case "plan":
@@ -791,6 +793,10 @@ public class Model {
                 JsonWriter jsonWriter = new JsonWriter(fileWriter)) {
                 jsonWriter.setIndent("    ");
 
+
+                //TODO anpassen an neues Format
+
+
                 writeTaskArray(jsonWriter, listTasks);
 
                 //Alle Streams fertig schreiben
@@ -834,11 +840,39 @@ public class Model {
      * @return
      * @throws IOException
      */
-    private ArrayList<Task> readTasksJson(File fileTasks) throws IOException {
-        if (fileTasks.length() == 0) return new ArrayList<Task>();
+    private boolean readTasksJson(File fileTasks) throws IOException {
+        if (fileTasks.length() == 0) return false;
         try (FileReader fileReader = new FileReader(fileTasks);
              JsonReader jsonReader = new JsonReader(fileReader)) {
-            return readTasksArray(jsonReader);
+
+            jsonReader.beginObject();
+
+            while (jsonReader.hasNext()) {
+                switch (jsonReader.nextName()) {
+                    case "planDate":
+                        setPlanDate(readPlanDate(jsonReader));
+                        break;
+                    case "planned":
+                        jsonReader.beginArray();
+
+
+                        //TODO
+
+
+                        jsonReader.endArray();
+                        break;
+                    case "tasks":
+                        setTaskListProperty(readTasksArray(jsonReader));
+                        break;
+                    default:
+                        //TODO improve Errorhandling
+                        System.err.println("(ERR) Model:readTasksJson() Unknown Name in: " + filePlanning);
+                        break;
+                }
+            }
+            jsonReader.endObject();
+
+            return true;
         }
 
         //Leserechte für Datei sicherstellen sonst Fehlermeldung
@@ -849,6 +883,10 @@ public class Model {
         ArrayList<Task> returnArray = new ArrayList<>();
 
         reader.beginArray();
+        if (reader.peek() == (JsonToken.END_ARRAY)) {
+            reader.endArray();
+            return returnArray;
+        }
         while(reader.hasNext()) {
            returnArray.add(readTask(reader));
         }
@@ -956,6 +994,10 @@ public class Model {
     public void setTaskListProperty(Collection<Task> newList) {
         taskListProperty.setAll(newList);
         System.out.println("Model:setTaskListProperty(Collection<Task> newList" + taskListProperty().get().toString() + ")");
+    }
+
+    public void setPlanDate(LocalDate newDate) {
+        this.planDate = newDate;
     }
 
     public void setSelectedTaskProperty(List<Task> newValue) {
