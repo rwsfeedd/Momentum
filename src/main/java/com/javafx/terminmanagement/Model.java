@@ -49,8 +49,9 @@ public class Model {
     //private final SimpleMapProperty<Integer, Task> taskMapProperty = new SimpleMapProperty<>(FXCollections.observableHashMap());
     private final SimpleListProperty<Task> taskListProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
 
+
+    private final SimpleListProperty<Integer> plannedIdListProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     /*
-    private final SimpleListProperty<String> stringListPlanProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     //Property für MainWindowView
     private final SimpleListProperty<String> stringListTodoProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final SimpleListProperty<Task> taskListAllProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -153,17 +154,17 @@ public class Model {
             }
             setTaskListProperty(FXCollections.observableList(newList));
 
+            //initialize planDate if not already done
+            if (planDate == null) planDate = LocalDate.now();
+
             //-------------------------------------
             //
             //CURRENT PROGRESS
             //
             //-------------------------------------
 
-            //planDate mit aktuellem Datum initialisieren, falls dieses nicht in dem planningFile eingelesen wurde
-            if (planDate == null) planDate = LocalDate.now();
-
-            /* noch ergänzen
-            //Aufgaben aus Taskliste mit Informationen aus planning.json anreichern
+            /*
+            //Add planned Information from plannedIdList to tasks in taskList
             boolean exists;
             HashSet<String> stringRemove = new HashSet<>();
             for (String stringTodo : stringListTodoProperty().getValue()) {
@@ -209,7 +210,8 @@ public class Model {
                     System.out.println("Aufgaben aus dem Aufgabenplan, die nicht in der Aufgabenliste existieren, konnten nicht aus dem Planfile gelöscht werden!");
                 }
             }
-            */
+             */
+
             /* implementieren
             //Testen, ob der Tag des Aufgabenplans noch aktuell ist und wenn nicht Aufgabenliste updaten
             LocalDate currentDate = LocalDate.now();
@@ -864,10 +866,15 @@ public class Model {
                     case "planned":
                         jsonReader.beginArray();
 
-
-                        //TODO
-
-
+                        if (jsonReader.peek() == (JsonToken.END_ARRAY)) {
+                            jsonReader.endArray();
+                            break;
+                        }
+                        ArrayList<Integer> newList = new ArrayList<>();
+                        while (jsonReader.hasNext()) {
+                            newList.add(Integer.parseInt(jsonReader.nextString()));
+                        }
+                        setPlannedIdListProperty(newList);
                         jsonReader.endArray();
                         break;
                     case "tasks":
@@ -897,7 +904,7 @@ public class Model {
             return returnArray;
         }
         while(reader.hasNext()) {
-           returnArray.add(readTask(reader));
+            returnArray.add(readTask(reader));
         }
         reader.endArray();
         return returnArray;
@@ -1000,9 +1007,18 @@ public class Model {
         return taskListProperty;
     }
 
+    public SimpleListProperty<Integer> plannedIdListProperty() {
+        return plannedIdListProperty;
+    }
+
     public void setTaskListProperty(Collection<Task> newList) {
         taskListProperty.setAll(newList);
         System.out.println("Model:setTaskListProperty(Collection<Task> newList" + taskListProperty().get().toString() + ")");
+    }
+
+    public void setPlannedIdListProperty(Collection<Integer> newList) {
+        plannedIdListProperty().setAll(newList);
+        System.out.println("Model:setPlannedIdListProperty(Collection<Task> newList" + plannedIdListProperty().get().toString() + ")");
     }
 
     public void setPlanDate(LocalDate newDate) {
