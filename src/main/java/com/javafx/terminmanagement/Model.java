@@ -157,22 +157,12 @@ public class Model {
             //initialize planDate if not already done
             if (planDate == null) planDate = LocalDate.now();
 
-            //-------------------------------------
-            //
-            //CURRENT PROGRESS
-            //
-            //-------------------------------------
-
-
-            //Add planned Information from plannedIdList to tasks in taskList
-
-            //go through all strings in planningProperty
-            //-> set planning in taskattribute
-            //-> delete Tasks that only exist in planning but not in tasklist
-            //todo doppelte ids hier checken??
+            //enrich taskList with information of planned tasks
             int index;
-            HashSet<Task> removeList = new HashSet<>();
+            HashSet<Integer> removeList = new HashSet<>();
 
+            //go through all Ids in planned, set planned attribute of associated Tasks in taskList
+            // and capture the ones that aren't associated with any task
             for (Integer id : plannedIdListProperty().getValue()) {
                 index = -1;
                 for (int i = 0; i < taskListProperty().getValue().size(); i++) {
@@ -184,26 +174,29 @@ public class Model {
                 }
 
                 if (index < 0) {
-                    //Aufgabe ist nicht in taskList aber in planarray in planning.json
-                    removeList.add(taskListProperty().get(index));
-                    System.err.println("Aufgabe mit id " + id + " aus planning existiert nicht!");
+                    removeList.add(taskListProperty().get(index).getId());
                 }
             }
 
-            //Aufgaben die in planning.json existieren, aber keine dahinterliegende Aufgabe besitzen, löschen
+            //remove ids not associated with any tasks
             if (!removeList.isEmpty()) {
-                ArrayList<String> planListNew = new ArrayList<>(stringListPlanProperty().getValue());
-                ArrayList<String> todoListNew = new ArrayList<>(stringListPlanProperty().getValue());
-                planListNew.removeAll(stringRemove);
-                todoListNew.removeAll(stringRemove);
-                if (writePlanningJson(filePlanning, planDate, planListNew, todoListNew)) {
-                    stringListPlanProperty().setAll(planListNew);
-                    stringListTodoProperty().setAll(todoListNew);
+                ArrayList<Integer> newIdList = new ArrayList<>(plannedIdListProperty().getValue());
+                for (Integer id : removeList) {
+                    newIdList.remove(id);
+                }
+
+                if (writeTasksJson(filePlanning, taskListProperty().getValue(), newIdList)) {
+                    setPlannedIdListProperty(newIdList);
                 } else {
-                    System.out.println("Aufgaben aus dem Aufgabenplan, die nicht in der Aufgabenliste existieren, konnten nicht aus dem Planfile gelöscht werden!");
+                    System.out.println("(ERR) Model(): new list of planned ids, couln't be writen to " + fileTasks);
                 }
             }
-             */
+
+            //-------------------------------------
+            //
+            //CURRENT PROGRESS
+            //
+            //-------------------------------------
 
             /* implementieren
             //Testen, ob der Tag des Aufgabenplans noch aktuell ist und wenn nicht Aufgabenliste updaten
@@ -349,7 +342,7 @@ public class Model {
         System.out.println(", listNew Entrys " + listNew.toString());
 
         //Aufgaben in File schreiben,und falls dies nicht funktioniert false zurückgeben
-        if (!writeTasksJson(fileTasks, listNew)) {
+        if (!writeTasksJson(fileTasks, listNew, plannedIdListProperty().getValue())) {
             System.err.println("Model:writeNewTask() -> writeTasksJson returned false!");
             return false;
         }
@@ -494,7 +487,7 @@ public class Model {
         listTaskNew.remove(selectedTaskProperty().getValue());
         listTaskNew.add(changedTask);
         //Aufgaben in File schreiben,und falls dies nicht funktioniert false zurückgeben
-        if (!writeTasksJson(fileTasks, listTaskNew)) return false;
+        if (!writeTasksJson(fileTasks, listTaskNew, plannedIdListProperty().getValue())) return false;
         //nach erfolgreichem Schreiben taskListAllProperty neu populieren
         taskListProperty().setAll(listTaskNew);
 
@@ -528,7 +521,7 @@ public class Model {
 
 
         //neue Aufgabenliste schreiben
-        if (!writeTasksJson(fileTasks, listNew)) {
+        if (!writeTasksJson(fileTasks, listNew, plannedIdListProperty().getValue())) {
             return false;
         }
         setTaskListProperty(FXCollections.observableList(listNew));
@@ -770,7 +763,7 @@ public class Model {
      * @param listTasks
      * @return Rückgabe von true, wenn alle Aufgaben erfolgreich in die Datei geschrieben wurden
      */
-    private boolean writeTasksJson(File fileTasks, List<Task> listTasks) {
+    private boolean writeTasksJson(File fileTasks, List<Task> listTasks, List<Integer> plannedIdList) {
         System.out.println("Model:writeTaskJson(File: " + fileTasks.toString());
         System.out.println(", listTasksEntrys:" + listTasks.toString());
 
@@ -921,7 +914,7 @@ public class Model {
                 switch(reader.nextName()){
                     case ("id"):
                         id = reader.nextInt();
-                        if (id > lastId) incLastId();
+                        if (id > lastId) setLastId(id);
                         break;
                     case("name"): name = reader.nextString();
                         break;
@@ -964,6 +957,14 @@ public class Model {
 
     public static int getLastId() {
         return lastId;
+    }
+
+    public static void setLastId(int newLastId) {
+        if (newLastId > lastId) {
+            lastId = newLastId;
+        } else {
+            System.out.println("(WAR) Model:incLastId() was called with an id that is smaller or even compared to previousId");
+        }
     }
 
     public static void incLastId() {
