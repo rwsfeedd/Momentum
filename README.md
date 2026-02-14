@@ -3,9 +3,8 @@ Gearbeitet wird in der IDE InteliJ IDEA mit Java und JavaFX. Zur Buildautomation
 ___
 Deployment:
 ---
-
 Unter build/distributions sind fertige Builds der Applikation für Windows enthalten. Die Datei muss zuerst in einer Umgebung entpackt werden, wo der ausführende Nutzer Schreib- und Leserechte hat. Danach kann in dem bin-Verzeichnis die Windows-Batchdatei ausgeführt werden um das Programm zu starten.
 ___
 Roadmap:
 ---
-komplette CRUD-Funktionalität wiederherstellen(funktioniert: Aufgaben erstellen und löschen, noch fehlend: Aufgaben bearbeiten, eintragen und austragen), TableView statt ListView implementieren, History implementieren, Zukunftsaufgabenpläne implementieren, SQLite als Datenbank
+komplette CRUD-Funktionalität wiederherstellen(funktioniert: Aufgaben erstellen, bearbeiten und löschen, noch fehlend: Aufgaben in den Tagesplan eintragen und austragen), TableView statt ListView implementieren, History implementieren, Zukunftsaufgabenpläne implementieren, SQLite als Datenbank, Fehlerbehandlung optimieren, Tests implementieren
