@@ -566,26 +566,25 @@ public class Model {
         return true;
     }
 
-    /*
-
-    public boolean writeSignInTask() {
-        //Test, ob eine Aufgabe ausgewählt wurde
+    public boolean signInTask() {
+        //check if any Task was selected
         if (selectedTaskProperty().getValue() == null) {
             return false;
         }
 
         Task taskToSignIn = selectedTaskProperty().getValue();
-        ArrayList<String> newList = new ArrayList<>(stringListPlanProperty());
+        ArrayList<Task> newList = new ArrayList<>(dailyListProperty().getValue());
 
-        //Test, ob Aufgabe schon in Plan eingetragen wurde
-        if (newList.contains(taskToSignIn.getName())) {
+        //check, if Task is already in dailyList otherwise add selectedTask to dailyList
+        if (newList.contains(taskToSignIn)) {
+            System.out.println("(WARN) Model:writeSignInTask() User tried to signIn Task that is already in dailyList!");
             return true;
         } else {
-            //in Aufgabenliste schreiben, dass Aufgabe in Aufgabenplan ist
-            taskListAllProperty().getValue().get(taskListAllProperty().getValue().indexOf(taskToSignIn)).setPlanned(true);
-
-            newList.add(taskToSignIn.getName());
+            newList.add(taskToSignIn);
+            setDailyListProperty(newList);
         }
+
+        /*
         //Aufgabe in filePlan schreiben und bei Erfolg in Plannungsliste eintragen
         if (writePlanningJson(filePlanning, planDate, newList, stringListTodoProperty())) {
             stringListPlanProperty().getValue().add(taskToSignIn.getName());
@@ -593,9 +592,12 @@ public class Model {
             return false;
         }
 
+         */
+
         return true;
     }
 
+    /*
     public boolean writeSignOutTask() {
         //Test, ob eine Aufgabe ausgewählt wurde
         if (selectedStringProperty().getValue() == null) {

@@ -186,13 +186,11 @@ public class MainWindowController {
      */
     @FXML
     public void onTaskSignInButtonClick() {
-        System.out.println("MainWindowController:onTaskSignInButtonClick() -> button pressed");
-        Model model = Model.getInstance();
-        /*
-        if (!model.writeSignInTask()) {
-            System.out.println("Fehler beim Eintragen der Aufgabe in den Aufgabenplan");
+        System.out.println("(INFO) MainWindowController:onTaskSignInButtonClick() -> button pressed");
+
+        if (!model.signInTask()) {
+            System.out.println("(ERR) Model:onTaskSignInButtonClick() Couldn't sign in task!");
         }
-         */
     }
 
     /**
