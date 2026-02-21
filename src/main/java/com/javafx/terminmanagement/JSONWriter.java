@@ -16,11 +16,11 @@ public class JSONWriter {
         jsonWriter.setIndent("    ");
     }
 
-    public void writeStringArray(String listName, List<String> stringList)  throws IOException{
+    public void writeIntegerArray(String listName, List<Integer> integerList) throws IOException {
         //listName als Enum übergaben und anschließend in switch statement resolven
         jsonWriter.name(listName);
         jsonWriter.beginArray();
-        for(String string: stringList) jsonWriter.value(string);
+        for (Integer integer : integerList) jsonWriter.value(integer);
         jsonWriter.endArray();
        //writeTodoArray
        //writePlanArray

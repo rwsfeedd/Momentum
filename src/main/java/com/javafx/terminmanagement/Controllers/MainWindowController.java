@@ -157,7 +157,7 @@ public class MainWindowController {
     public void onTaskSignInButtonClick() {
         System.out.println("(INFO) MainWindowController:onTaskSignInButtonClick() -> button pressed");
 
-        if (!model.signInTask()) {
+        if (!model.writeSignInTask()) {
             System.out.println("(ERR) Model:onTaskSignInButtonClick() Couldn't sign in task!");
         }
     }
@@ -167,15 +167,13 @@ public class MainWindowController {
      */
     @FXML
     public void onTaskSignOutButtonClick() {
-        System.out.println("MainWindowController:onTaskSignOutButtonClick() -> button pressed");
-        Model model = Model.getInstance();
-        //System.out.println(model.selectedStringProperty().getValue());
+        System.out.println("(INFO) MainWindowController:onTaskSignOutButtonClick() -> button pressed");
+
         /*
         if (!model.writeSignOutTask()) {
-            System.err.println("Aufgabe konnte nicht ausgetragen werden!");
+            System.err.println("(ERR) Model:onTaskSignOutButtonClick() Couldn't sign out task!");
         }
-         */
-
+        */
     }
 
     /**
@@ -183,7 +181,7 @@ public class MainWindowController {
      */
     @FXML
     public void onTaskDoneButtonClick() {
-        System.out.println("MainWindowController:onTaskDoneButtonClick() -> button pressed");
+        System.out.println("(INFO) MainWindowController:onTaskDoneButtonClick() -> button pressed");
         Model model = Model.getInstance();
         /*
         if (!model.writeDoneTask()) {

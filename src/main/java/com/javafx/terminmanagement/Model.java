@@ -566,37 +566,47 @@ public class Model {
         return true;
     }
 
-    public boolean signInTask() {
+    /*
+    public boolean writeDailyList(List<Tasks> newList) {
+        //write dailyList to fileTasks
+
+        return true;
+    }
+     */
+
+    public boolean writeSignInTask() {
         //check if any Task was selected
         if (selectedTaskProperty().getValue() == null) {
             return false;
         }
 
         Task taskToSignIn = selectedTaskProperty().getValue();
-        ArrayList<Task> newList = new ArrayList<>(dailyListProperty().getValue());
+        ArrayList<Task> newDailyList = new ArrayList<>(dailyListProperty().getValue());
 
         //check, if Task is already in dailyList otherwise add selectedTask to dailyList
-        if (newList.contains(taskToSignIn)) {
+        if (newDailyList.contains(taskToSignIn)) {
             System.out.println("(WARN) Model:writeSignInTask() User tried to signIn Task that is already in dailyList!");
             return true;
         } else {
-            newList.add(taskToSignIn);
-            setDailyListProperty(newList);
+            newDailyList.add(taskToSignIn);
         }
 
-        /*
-        //Aufgabe in filePlan schreiben und bei Erfolg in Plannungsliste eintragen
-        if (writePlanningJson(filePlanning, planDate, newList, stringListTodoProperty())) {
-            stringListPlanProperty().getValue().add(taskToSignIn.getName());
-        } else {
+        ArrayList<Integer> newDailyIds = new ArrayList<>();
+        for (Task task : newDailyList) {
+            newDailyIds.add(task.getId());
+        }
+
+        ArrayList<Task> newList = new ArrayList<>(taskListProperty().getValue());
+        //write newList into fileTasks
+        if (!writeTasksJson(fileTasks, newList, newDailyIds)) {
+            System.out.println("(ERR) Model:writeSignInTask() Error while trying to writeTasksJson!");
             return false;
         }
 
-         */
+        setDailyListProperty(newDailyList);
 
         return true;
     }
-
     /*
     public boolean writeSignOutTask() {
         //Test, ob eine Aufgabe ausgewählt wurde
@@ -628,7 +638,8 @@ public class Model {
 
         return true;
     }
-
+    */
+    /*
     public boolean writeDoneTask() {
         //Test, ob eine Aufgabe ausgewählt wurde
         if (selectedStringProperty().getValue() == null) {
@@ -780,7 +791,7 @@ public class Model {
      * @param listTasks
      * @return Rückgabe von true, wenn alle Aufgaben erfolgreich in die Datei geschrieben wurden
      */
-    private boolean writeTasksJson(File fileTasks, List<Task> listTasks, List<Integer> plannedIdList) {
+    private boolean writeTasksJson(File fileTasks, List<Task> listTasks, List<Integer> planToday) {
         System.out.println("Model:writeTaskJson(File: " + fileTasks.toString());
         System.out.println(", listTasksEntrys:" + listTasks.toString());
 
@@ -803,8 +814,7 @@ public class Model {
                 //TODO change to always print the right date
                 jsonWriter.writeDate(planDate);
 
-                //TODO implement planned
-                jsonWriter.writeStringArray("planned", new ArrayList<>());
+                jsonWriter.writeIntegerArray("planToday", new ArrayList<>(planToday));
 
                 writeTaskArray(gsonWriter, listTasks);
 
@@ -866,7 +876,7 @@ public class Model {
                     case "planDate":
                         setPlanDate(readPlanDate(jsonReader));
                         break;
-                    case "planned":
+                    case "planToday":
                         jsonReader.beginArray();
 
                         if (jsonReader.peek() == (JsonToken.END_ARRAY)) {
