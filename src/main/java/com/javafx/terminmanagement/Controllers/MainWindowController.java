@@ -83,6 +83,7 @@ public class MainWindowController {
         allList.itemsProperty().bind(model.taskListProperty());
         //model.taskListProperty().bind(model.taskListProperty());
         model.selectedTaskProperty().bind(allList.selectionModelProperty().getValue().selectedItemProperty());
+        model.selectedTaskProperty().bind(dailyList.selectionModelProperty().getValue().selectedItemProperty());
 
         dailyList.itemsProperty().bind(model.dailyListProperty());
 
@@ -169,11 +170,9 @@ public class MainWindowController {
     public void onTaskSignOutButtonClick() {
         System.out.println("(INFO) MainWindowController:onTaskSignOutButtonClick() -> button pressed");
 
-        /*
         if (!model.writeSignOutTask()) {
             System.err.println("(ERR) Model:onTaskSignOutButtonClick() Couldn't sign out task!");
         }
-        */
     }
 
     /**

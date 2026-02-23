@@ -607,38 +607,42 @@ public class Model {
 
         return true;
     }
-    /*
+
     public boolean writeSignOutTask() {
-        //Test, ob eine Aufgabe ausgewählt wurde
-        if (selectedStringProperty().getValue() == null) {
+        //check if any Task was selected
+        if (selectedTaskProperty().getValue() == null) {
             return false;
         }
 
         //temporäre Variablen erstellen und mit Werten füllen
-        String taskToSignOut = selectedStringProperty().getValue();
-        ArrayList<String> newList = new ArrayList<>(stringListPlanProperty());
-        //ausgewählte Aufgabe aus temporärer Liste entfernen
-        newList.remove(taskToSignOut);
+        Task taskToSignOut = selectedTaskProperty().getValue();
+        ArrayList<Task> newDailyList = new ArrayList<>(dailyListProperty().getValue());
 
-        //temporäre Liste in filePlanning schreiben und Propertys updaten
-        if (writePlanningJson(filePlanning, planDate, newList, stringListTodoProperty().getValue())) {
-            //stringListProperty für mainWindow updaten
-            stringListPlanProperty().getValue().setAll(newList);
-            //taskMapProperty für taskOverview updaten
-            int indexTaskToSignOut = findIndexOfTaskByName(taskToSignOut, taskListAllProperty());
-            if (indexTaskToSignOut != -1) {
-                taskListAllProperty().getValue().get(indexTaskToSignOut).setPlanned(false);
-            } else {
-                System.out.println("Aufgabe aus Aufgabenplan gelöscht, die nicht in Aufgabenliste exisitiert!");
-            }
+        //if Task exists in dailyList, remove it from dailyList
+        if (!newDailyList.contains(taskToSignOut)) {
+            System.out.println("(WARN) Model:writeSignOutTask() User tried to signOut Task that doesn't exist in dailyList!");
+            return true;
+        }
 
-        } else {
+        newDailyList.remove(taskToSignOut);
+
+        ArrayList<Integer> newDailyIds = new ArrayList<>();
+        for (Task task : newDailyList) {
+            newDailyIds.add(task.getId());
+        }
+
+        ArrayList<Task> newList = new ArrayList<>(taskListProperty().getValue());
+        //write newList into fileTasks
+        if (!writeTasksJson(fileTasks, newList, newDailyIds)) {
+            System.out.println("(ERR) Model:writeSignOutTask() Error while trying to writeTasksJson!");
             return false;
         }
 
+        setDailyListProperty(newDailyList);
+
         return true;
     }
-    */
+
     /*
     public boolean writeDoneTask() {
         //Test, ob eine Aufgabe ausgewählt wurde
